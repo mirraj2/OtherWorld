@@ -41,7 +41,6 @@ public class OWClient extends BasicGame implements ConnectionListener {
   private Ship myShip = null;
   private BackgroundRenderer backgroundRenderer;
   private GameContainer container;
-  private boolean mouseDown = false;
   private int mouseX, mouseY;
 
   public OWClient() {
@@ -80,12 +79,6 @@ public class OWClient extends BasicGame implements ConnectionListener {
 
   @Override
   public void update(GameContainer container, int delta) throws SlickException {
-    if (mouseDown) {
-      Rectangle r = model.getCameraBounds(container.getWidth(), container.getHeight());
-      myShip.targetX = r.x + mouseX;
-      myShip.targetY = r.y + mouseY;
-    }
-
     model.tick(delta);
   }
 
@@ -95,7 +88,6 @@ public class OWClient extends BasicGame implements ConnectionListener {
       return;
     }
 
-    mouseDown = true;
     mouseX = x;
     mouseY = y;
     orderShipToClick();
@@ -120,14 +112,8 @@ public class OWClient extends BasicGame implements ConnectionListener {
       return;
     }
 
-    mouseDown = false;
     myShip.halt();
-
-    JsonObject o = new JsonObject();
-    o.addProperty("command", "halt");
-    o.addProperty("x", myShip.x);
-    o.addProperty("y", myShip.y);
-    sendToServer(o);
+    sendShipUpdate();
   }
 
   @Override
@@ -141,14 +127,20 @@ public class OWClient extends BasicGame implements ConnectionListener {
   private void orderShipToClick() {
     Rectangle r = model.getCameraBounds(container.getWidth(), container.getHeight());
 
-    myShip.targetX = r.x + mouseX;
-    myShip.targetY = r.y + mouseY;
-    myShip.rotateToTarget();
+    myShip.rotateToTarget(r.x + mouseX, r.y + mouseY);
+    myShip.moving = true;
 
+    sendShipUpdate();
+  }
+
+  private void sendShipUpdate() {
     JsonObject o = new JsonObject();
-    o.addProperty("command", "move");
-    o.addProperty("x", myShip.targetX);
-    o.addProperty("y", myShip.targetY);
+    o.addProperty("command", "update");
+    o.addProperty("id", myShip.id);
+    o.addProperty("x", myShip.x);
+    o.addProperty("y", myShip.y);
+    o.addProperty("rotation", myShip.rotation);
+    o.addProperty("moving", myShip.moving);
     sendToServer(o);
   }
 
@@ -184,18 +176,13 @@ public class OWClient extends BasicGame implements ConnectionListener {
     } else if (command.equals("planet")) {
       model.add(new Planet(o.get("name").getAsString(), o.get("x").getAsDouble(), o.get("y")
           .getAsDouble()));
-    } else if (command.equals("move")) {
-      int id = o.get("id").getAsInt();
-      Ship ship = model.getShip(id);
-      ship.targetX = o.get("x").getAsDouble();
-      ship.targetY = o.get("y").getAsDouble();
-      ship.rotateToTarget();
-    } else if (command.equals("halt")) {
+    } else if (command.equals("update")) {
       int id = o.get("id").getAsInt();
       Ship ship = model.getShip(id);
       ship.x = o.get("x").getAsDouble();
       ship.y = o.get("y").getAsDouble();
-      ship.halt();
+      ship.rotation = o.get("rotation").getAsDouble();
+      ship.moving = o.get("moving").getAsBoolean();
     }
     else {
       logger.warn("unknown message: " + o);

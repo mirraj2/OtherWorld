@@ -66,6 +66,7 @@ public class ClientModel {
 
   private void render(SGraphics g, Ship ship) {
     Image image = ImageLoader.getSlickImage("ships/" + ship.type.getImageName());
+
     double x = ship.x - image.getWidth() / 2;
     double y = ship.y - image.getHeight() / 2;
 

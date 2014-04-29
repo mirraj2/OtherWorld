@@ -91,12 +91,10 @@ public class OWServer implements ConnectionListener {
     JsonObject o = parser.parse(new String(data, Charsets.UTF_8)).getAsJsonObject();
     String command = o.get("command").getAsString();
 
-    if (command.equals("move")) {
-      o.addProperty("id", connectionShips.get(from).id);
+    if (command.equals("update")) {
       sendToAllBut(o, from);
-    } else if (command.equals("halt")) {
-      o.addProperty("id", connectionShips.get(from).id);
-      sendToAllBut(o, from);
+    } else {
+      logger.debug("Unknown message: " + o);
     }
   }
 
