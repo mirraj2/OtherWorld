@@ -1,4 +1,4 @@
-package ow.client;
+package ow.client.model;
 
 public class Planet {
 

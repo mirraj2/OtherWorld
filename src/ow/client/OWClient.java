@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import jexxus.client.ClientConnection;
@@ -23,6 +24,10 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
+import ow.client.model.ClientModel;
+import ow.client.model.Planet;
+import ow.client.model.Ship;
+import ow.client.model.Shot;
 import ow.common.ShipType;
 
 public class OWClient extends BasicGame implements ConnectionListener {
@@ -117,7 +122,11 @@ public class OWClient extends BasicGame implements ConnectionListener {
 
   @Override
   public void keyPressed(int key, char c) {
-    if (key == Input.KEY_ESCAPE) {
+    if (key == Input.KEY_SPACE) {
+      JsonObject o = new JsonObject();
+      o.addProperty("command", "shoot");
+      sendToServer(o);
+    } else if (key == Input.KEY_ESCAPE) {
       container.exit();
       System.exit(0);
     }
@@ -183,7 +192,15 @@ public class OWClient extends BasicGame implements ConnectionListener {
       ship.y = o.get("y").getAsDouble();
       ship.rotation = o.get("rotation").getAsDouble();
       ship.moving = o.get("moving").getAsBoolean();
-    } else {
+    } else if (command.equals("shots")) {
+      for (JsonElement e : o.getAsJsonArray("shots")) {
+        JsonObject s = e.getAsJsonObject();
+        model.add(new Shot(s.get("id").getAsInt(), s.get("x").getAsDouble(), s.get("y")
+            .getAsDouble(), s.get("rotation").getAsDouble(), s.get("velocity").getAsDouble(), s
+            .get("max_distance").getAsDouble()));
+      }
+    }
+    else {
       logger.warn("unknown message: " + o);
     }
   }

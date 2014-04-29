@@ -1,9 +1,12 @@
 package ow.server;
 
+import java.util.Collection;
 import java.util.Map;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import jexxus.common.Connection;
@@ -14,6 +17,8 @@ import jexxus.server.ServerConnection;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import ow.common.ShipType;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 public class OWServer implements ConnectionListener {
 
@@ -80,6 +85,24 @@ public class OWServer implements ConnectionListener {
     return o;
   }
 
+  private JsonObject createShotsObject(Collection<Shot> shots) {
+    JsonObject o = new JsonObject();
+    o.addProperty("command", "shots");
+    JsonArray shotsArray = new JsonArray();
+    for (Shot shot : shots) {
+      JsonObject s = new JsonObject();
+      s.addProperty("id", shot.id);
+      s.addProperty("x", shot.x);
+      s.addProperty("y", shot.y);
+      s.addProperty("rotation", shot.rotation);
+      s.addProperty("velocity", shot.velocity);
+      s.addProperty("max_distance", shot.maxDistance);
+      shotsArray.add(s);
+    }
+    o.add("shots", shotsArray);
+    return o;
+  }
+
   @Override
   public void connectionBroken(Connection broken, boolean forced) {
     logger.debug("Lost connection with: " + broken);
@@ -92,15 +115,22 @@ public class OWServer implements ConnectionListener {
     JsonObject o = parser.parse(new String(data, Charsets.UTF_8)).getAsJsonObject();
     String command = o.get("command").getAsString();
 
+    Ship ship = connectionShips.get(from);
+
     if (command.equals("update")) {
-      Ship ship = world.getShip(o.get("id").getAsInt());
+      checkArgument(Objects.equal(ship.id, o.get("id").getAsInt()),
+          "Cannot update a ship that is not your own! " + ship.id + " vs " + o.get("id"));
+
       ship.x = o.get("x").getAsDouble();
       ship.y = o.get("y").getAsDouble();
       ship.moving = o.get("moving").getAsBoolean();
       ship.rotation = o.get("rotation").getAsDouble();
 
       sendToAllBut(o, from);
-    } else {
+    } else if (command.equals("shoot")) {
+      sendToAll(createShotsObject(world.fire(ship)));
+    }
+    else {
       logger.debug("Unknown message: " + o);
     }
   }

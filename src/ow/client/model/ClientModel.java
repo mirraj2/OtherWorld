@@ -1,4 +1,4 @@
-package ow.client;
+package ow.client.model;
 
 import java.awt.Rectangle;
 import java.util.List;
@@ -7,12 +7,20 @@ import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.log4j.Logger;
+import org.newdawn.slick.Color;
 import org.newdawn.slick.Image;
+import ow.client.ImageLoader;
+import ow.client.SGraphics;
 
 public class ClientModel {
 
+  @SuppressWarnings("unused")
+  private static final Logger logger = Logger.getLogger(ClientModel.class);
+
   private Map<Integer, Ship> ships = ImmutableMap.of();
   private List<Planet> planets = Lists.newCopyOnWriteArrayList();
+  private List<Shot> shots = Lists.newCopyOnWriteArrayList();
 
   private Ship focus = null;
 
@@ -30,6 +38,10 @@ public class ClientModel {
     this.planets.add(planet);
   }
 
+  public void add(Shot shot) {
+    shots.add(shot);
+  }
+
   public Ship getShip(int id) {
     return ships.get(id);
   }
@@ -42,6 +54,15 @@ public class ClientModel {
     for (Ship ship : ships.values()) {
       ship.tick(delta);
     }
+
+    List<Shot> expiredShots = Lists.newArrayList();
+    for (Shot shot : shots) {
+      shot.tick(delta);
+      if(shot.hasExpired()){
+        expiredShots.add(shot);
+      }
+    }
+    shots.removeAll(expiredShots);
   }
 
   public void render(SGraphics g, int w, int h) {
@@ -59,6 +80,10 @@ public class ClientModel {
 
     for (Ship ship : ships.values()) {
       render(g, ship);
+    }
+
+    for (Shot shot : shots) {
+      g.setColor(Color.orange).fillCircle(shot.x, shot.y, 2);
     }
   }
 
