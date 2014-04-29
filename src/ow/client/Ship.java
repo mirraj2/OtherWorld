@@ -6,7 +6,7 @@ public class Ship {
 
   public final int id;
   public double x, y;
-  public double rotation = Math.PI / 2;
+  public double rotation;
   public boolean moving = false;
 
   public final ShipType type;
@@ -29,6 +29,16 @@ public class Ship {
   public Ship setLocation(double x, double y) {
     this.x = x;
     this.y = y;
+    return this;
+  }
+
+  public Ship setRotation(double rotation) {
+    this.rotation = rotation;
+    return this;
+  }
+
+  public Ship moving(boolean moving) {
+    this.moving = moving;
     return this;
   }
 

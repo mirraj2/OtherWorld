@@ -1,17 +1,20 @@
 package ow.server;
 
 import java.awt.Point;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import ow.common.Planet;
+import com.google.common.collect.Maps;
 import ow.common.ShipType;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class World {
 
-  private List<Ship> ships = Lists.newArrayList();
+  private Map<Integer, Ship> ships = Maps.newConcurrentMap();
   private List<Planet> planets = Lists.newArrayList();
 
   private final Point spawnLocation = new Point(1400, 900);
@@ -25,18 +28,22 @@ public class World {
 
   public void add(Ship ship) {
     checkNotNull(ship);
+    
+    this.ships.put(ship.id, ship);
+  }
 
-    this.ships.add(ship);
+  public Ship getShip(int id) {
+    return ships.get(id);
   }
 
   public void remove(Ship ship) {
     checkNotNull(ship);
 
-    this.ships.remove(ship);
+    this.ships.remove(ship.id);
   }
 
-  public List<Ship> getShips() {
-    return ships;
+  public Collection<Ship> getShips() {
+    return ImmutableList.copyOf(ships.values());
   }
 
   public Point getSpawnLocation() {

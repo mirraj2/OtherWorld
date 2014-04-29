@@ -23,7 +23,6 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
-import ow.common.Planet;
 import ow.common.ShipType;
 
 public class OWClient extends BasicGame implements ConnectionListener {
@@ -163,10 +162,11 @@ public class OWClient extends BasicGame implements ConnectionListener {
       int id = o.get("id").getAsInt();
       double x = o.get("x").getAsDouble();
       double y = o.get("y").getAsDouble();
+      double rotation = o.get("rotation").getAsDouble();
       boolean mine = o.has("control");
 
       Ship ship = new Ship(id, ShipType.valueOf(o.get("type").getAsString()))
-          .setLocation(x, y).halt();
+          .setLocation(x, y).setRotation(rotation).halt();
       model.add(ship);
 
       if (mine) {
@@ -183,8 +183,7 @@ public class OWClient extends BasicGame implements ConnectionListener {
       ship.y = o.get("y").getAsDouble();
       ship.rotation = o.get("rotation").getAsDouble();
       ship.moving = o.get("moving").getAsBoolean();
-    }
-    else {
+    } else {
       logger.warn("unknown message: " + o);
     }
   }

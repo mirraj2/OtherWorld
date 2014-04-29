@@ -1,6 +1,5 @@
-package ow.common;
+package ow.server;
 
-import ow.server.Entity;
 
 public class Planet extends Entity {
 

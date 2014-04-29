@@ -4,14 +4,14 @@ import java.awt.Rectangle;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.newdawn.slick.Image;
-import ow.common.Planet;
 
 public class ClientModel {
 
-  private Map<Integer, Ship> ships = Maps.newConcurrentMap();
+  private Map<Integer, Ship> ships = ImmutableMap.of();
   private List<Planet> planets = Lists.newCopyOnWriteArrayList();
 
   private Ship focus = null;
@@ -20,7 +20,10 @@ public class ClientModel {
     if (ships.containsKey(ship.id)) {
       return;
     }
-    this.ships.put(ship.id, ship);
+    Map<Integer, Ship> newShipsMap = Maps.newTreeMap();
+    newShipsMap.putAll(ships);
+    newShipsMap.put(ship.id, ship);
+    this.ships = ImmutableMap.copyOf(newShipsMap);
   }
 
   public void add(Planet planet) {

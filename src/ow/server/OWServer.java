@@ -13,7 +13,6 @@ import jexxus.server.Server;
 import jexxus.server.ServerConnection;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import ow.common.Planet;
 import ow.common.ShipType;
 
 public class OWServer implements ConnectionListener {
@@ -67,6 +66,8 @@ public class OWServer implements ConnectionListener {
     o.addProperty("type", ship.type.name());
     o.addProperty("x", ship.x);
     o.addProperty("y", ship.y);
+    o.addProperty("rotation", ship.rotation);
+    o.addProperty("moving", ship.moving);
     return o;
   }
 
@@ -92,6 +93,12 @@ public class OWServer implements ConnectionListener {
     String command = o.get("command").getAsString();
 
     if (command.equals("update")) {
+      Ship ship = world.getShip(o.get("id").getAsInt());
+      ship.x = o.get("x").getAsDouble();
+      ship.y = o.get("y").getAsDouble();
+      ship.moving = o.get("moving").getAsBoolean();
+      ship.rotation = o.get("rotation").getAsDouble();
+
       sendToAllBut(o, from);
     } else {
       logger.debug("Unknown message: " + o);
