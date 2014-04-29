@@ -1,22 +1,22 @@
 package ow.client;
 
+import ow.common.ShipType;
+
 
 public class Ship {
 
+  public final int id;
   public double x, y;
   public double targetX, targetY;
   public double rotation = Math.PI / 2;
 
-  public final String image;
+  public final ShipType type;
+  private final double maxSpeed;
 
-  /**
-   * In pixels/second
-   */
-  public final double maxSpeed;
-
-  public Ship(String image, double maxSpeed) {
-    this.image = image;
-    this.maxSpeed = maxSpeed;
+  public Ship(int id, ShipType type) {
+    this.id = id;
+    this.type = type;
+    this.maxSpeed = type.getMaxSpeed();
   }
 
   public Ship rotateToTarget() {
@@ -40,6 +40,14 @@ public class Ship {
   }
 
   public void tick(int delta) {
+    if (type == ShipType.STATION) {
+      rotation += 2 * Math.PI * delta / 1000 / 100;
+    }
+
+    moveTowardsTarget(delta);
+  }
+
+  private void moveTowardsTarget(int delta) {
     float dx = (float) (Math.cos(rotation) * delta * maxSpeed / 1000);
     float dy = -(float) (Math.sin(rotation) * delta * maxSpeed / 1000);
 

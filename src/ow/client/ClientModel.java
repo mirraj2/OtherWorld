@@ -2,19 +2,33 @@ package ow.client;
 
 import java.awt.Rectangle;
 import java.util.List;
-
-import org.newdawn.slick.Image;
+import java.util.Map;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import org.newdawn.slick.Image;
+import ow.common.Planet;
 
 public class ClientModel {
 
-  private List<Ship> ships = Lists.newCopyOnWriteArrayList();
+  private Map<Integer, Ship> ships = Maps.newConcurrentMap();
+  private List<Planet> planets = Lists.newCopyOnWriteArrayList();
 
   private Ship focus = null;
 
   public void add(Ship ship) {
-    this.ships.add(ship);
+    if (ships.containsKey(ship.id)) {
+      return;
+    }
+    this.ships.put(ship.id, ship);
+  }
+
+  public void add(Planet planet) {
+    this.planets.add(planet);
+  }
+
+  public Ship getShip(int id) {
+    return ships.get(id);
   }
 
   public void focus(Ship ship) {
@@ -22,7 +36,7 @@ public class ClientModel {
   }
 
   public void tick(int delta) {
-    for (Ship ship : ships) {
+    for (Ship ship : ships.values()) {
       ship.tick(delta);
     }
   }
@@ -34,7 +48,13 @@ public class ClientModel {
 
     g.translate(-(focus.x - w / 2), -(focus.y - h / 2));
 
-    for (Ship ship : ships) {
+    for (Planet planet : planets) {
+      Image im = ImageLoader.getSlickImage("planets/" + planet.name + ".png");
+
+      g.draw(im, planet.x - im.getWidth() / 2, planet.y - im.getHeight() / 2);
+    }
+
+    for (Ship ship : ships.values()) {
       render(g, ship);
     }
   }
@@ -45,7 +65,7 @@ public class ClientModel {
   }
 
   private void render(SGraphics g, Ship ship) {
-    Image image = ImageLoader.getSlickImage(ship.image);
+    Image image = ImageLoader.getSlickImage("ships/" + ship.type.getImageName());
     double x = ship.x - image.getWidth() / 2;
     double y = ship.y - image.getHeight() / 2;
 

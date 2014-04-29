@@ -3,11 +3,15 @@ package ow.client;
 import java.awt.Rectangle;
 import java.io.IOException;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Throwables;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import jexxus.client.ClientConnection;
 import jexxus.common.Connection;
 import jexxus.common.ConnectionListener;
+import jexxus.common.Delivery;
 import jexxus.server.ServerConnection;
-
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.lwjgl.opengl.Display;
@@ -19,15 +23,14 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import ow.common.Planet;
+import ow.common.ShipType;
 
 public class OWClient extends BasicGame implements ConnectionListener {
 
   private static final Logger logger = Logger.getLogger(OWClient.class);
+
+  private static final boolean FULLSCREEN = false;
 
   private static final String SERVER_IP = "localhost";
   private static final int PORT = 19883;
@@ -119,6 +122,12 @@ public class OWClient extends BasicGame implements ConnectionListener {
 
     mouseDown = false;
     myShip.halt();
+
+    JsonObject o = new JsonObject();
+    o.addProperty("command", "halt");
+    o.addProperty("x", myShip.x);
+    o.addProperty("y", myShip.y);
+    sendToServer(o);
   }
 
   @Override
@@ -135,6 +144,16 @@ public class OWClient extends BasicGame implements ConnectionListener {
     myShip.targetX = r.x + mouseX;
     myShip.targetY = r.y + mouseY;
     myShip.rotateToTarget();
+
+    JsonObject o = new JsonObject();
+    o.addProperty("command", "move");
+    o.addProperty("x", myShip.targetX);
+    o.addProperty("y", myShip.targetY);
+    sendToServer(o);
+  }
+
+  private void sendToServer(JsonObject o) {
+    conn.send(o.toString().getBytes(Charsets.UTF_8), Delivery.RELIABLE);
   }
 
   @Override
@@ -145,24 +164,41 @@ public class OWClient extends BasicGame implements ConnectionListener {
   @Override
   public void receive(byte[] data, Connection from) {
     JsonObject o = parser.parse(new String(data, Charsets.UTF_8)).getAsJsonObject();
-    logger.debug(o);
 
     String command = o.get("command").getAsString().toLowerCase();
 
-    if (command.equals("spawn")) {
+    if (command.equals("ship")) {
+      int id = o.get("id").getAsInt();
       double x = o.get("x").getAsDouble();
       double y = o.get("y").getAsDouble();
+      boolean mine = o.has("control");
 
-      if (myShip == null) {
-        myShip = new Ship("Mini.png", 200);
-        model.add(myShip);
+      Ship ship = new Ship(id, ShipType.valueOf(o.get("type").getAsString()))
+          .setLocation(x, y).halt();
+      model.add(ship);
+
+      if (mine) {
+        myShip = ship;
         model.focus(myShip);
       }
-
-      model.add(new Ship("Mini.png", 200).setLocation(x, y).halt());
-      // next step, make server spawn ships and have server move them around randomly
-
-      myShip.setLocation(x, y).halt();
+    } else if (command.equals("planet")) {
+      model.add(new Planet(o.get("name").getAsString(), o.get("x").getAsDouble(), o.get("y")
+          .getAsDouble()));
+    } else if (command.equals("move")) {
+      int id = o.get("id").getAsInt();
+      Ship ship = model.getShip(id);
+      ship.targetX = o.get("x").getAsDouble();
+      ship.targetY = o.get("y").getAsDouble();
+      ship.rotateToTarget();
+    } else if (command.equals("halt")) {
+      int id = o.get("id").getAsInt();
+      Ship ship = model.getShip(id);
+      ship.x = o.get("x").getAsDouble();
+      ship.y = o.get("y").getAsDouble();
+      ship.halt();
+    }
+    else {
+      logger.warn("unknown message: " + o);
     }
   }
 
@@ -172,11 +208,19 @@ public class OWClient extends BasicGame implements ConnectionListener {
   public static void main(String[] args) throws Exception {
     BasicConfigurator.configure();
 
-    AppGameContainer appgc = new AppGameContainer(new OWClient());
+    AppGameContainer container = new AppGameContainer(new OWClient());
+
     DisplayMode mode = Display.getDesktopDisplayMode();
 
-    appgc.setDisplayMode(mode.getWidth(), mode.getHeight(), true);
-    appgc.start();
+    container.setAlwaysRender(true);
+
+    if (FULLSCREEN) {
+      container.setDisplayMode(mode.getWidth(), mode.getHeight(), true);
+    } else {
+      container.setDisplayMode(mode.getWidth() / 2, mode.getHeight() / 2, false);
+    }
+
+    container.start();
   }
 
 }

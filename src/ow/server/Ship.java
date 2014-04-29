@@ -2,25 +2,16 @@ package ow.server;
 
 import java.awt.Point;
 
-public class Ship {
+import ow.common.ShipType;
 
-  private double x, y;
+public class Ship extends Entity {
 
-  public Ship(Point initialLocation) {
+  public final ShipType type;
+
+  public Ship(ShipType type, Point initialLocation) {
+    this.type = type;
+
     setLocation(initialLocation);
-  }
-
-  public void setLocation(Point p) {
-    this.x = p.x;
-    this.y = p.y;
-  }
-
-  public double getX() {
-    return x;
-  }
-
-  public double getY() {
-    return y;
   }
 
 }

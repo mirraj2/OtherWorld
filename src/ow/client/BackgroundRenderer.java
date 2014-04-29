@@ -3,16 +3,15 @@ package ow.client;
 import java.awt.Rectangle;
 import java.util.Random;
 
+import com.google.common.base.Throwables;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 
-import com.google.common.base.Throwables;
-
 public class BackgroundRenderer {
 
-  public static final int STAR_SECTOR_SIZE = 1200;
-  private static final int NUM_STARS = 2500;
+  public static final int STAR_SECTOR_SIZE = 600;
+  private static final int NUM_STARS = 1200;
   private static final Random rand = new Random();
 
   private final Image stars;
