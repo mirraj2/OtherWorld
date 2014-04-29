@@ -3,6 +3,7 @@ package ow.client;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
+import org.newdawn.slick.geom.Shape;
 
 public class SGraphics {
 
@@ -17,8 +18,19 @@ public class SGraphics {
     return this;
   }
 
+  public SGraphics fill(Shape shape) {
+    g.fill(shape);
+    return this;
+  }
+
   public SGraphics fillRect(double x, double y, double w, double h) {
     g.fillRect((float) x, (float) y, (float) w, (float) h);
+    return this;
+  }
+
+  public SGraphics fillCircle(double x, double y, double radius) {
+    g.fillOval((float) (x - radius), (float) (y - radius), (float) (radius * 2),
+        (float) (radius * 2));
     return this;
   }
 
@@ -44,6 +56,11 @@ public class SGraphics {
 
   public SGraphics pop() {
     g.popTransform();
+    return this;
+  }
+
+  public SGraphics destroy() {
+    g.destroy();
     return this;
   }
 

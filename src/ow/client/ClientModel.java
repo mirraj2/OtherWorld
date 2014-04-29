@@ -1,10 +1,11 @@
 package ow.client;
 
+import java.awt.Rectangle;
 import java.util.List;
 
-import com.google.common.collect.Lists;
-import org.newdawn.slick.Color;
 import org.newdawn.slick.Image;
+
+import com.google.common.collect.Lists;
 
 public class ClientModel {
 
@@ -20,30 +21,39 @@ public class ClientModel {
     this.focus = ship;
   }
 
-  public void render(SGraphics g, int w, int h) {
-    g.setColor(Color.black).fillRect(0, 0, w, h);
+  public void tick(int delta) {
+    for (Ship ship : ships) {
+      ship.tick(delta);
+    }
+  }
 
+  public void render(SGraphics g, int w, int h) {
     if (this.focus == null) {
       return;
     }
 
-    g.translate(-(focus.getX() - w / 2), -(focus.getY() - h / 2));
+    g.translate(-(focus.x - w / 2), -(focus.y - h / 2));
 
     for (Ship ship : ships) {
       render(g, ship);
     }
   }
 
+  public Rectangle getCameraBounds(int screenWidth, int screenHeight) {
+    return new Rectangle((int) (focus.x - screenWidth / 2), (int) (focus.y - screenHeight / 2),
+        screenWidth, screenHeight);
+  }
+
   private void render(SGraphics g, Ship ship) {
-    Image image = ImageLoader.getSlickImage(ship.getImage());
-    double x = ship.getX() - image.getWidth() / 2;
-    double y = ship.getY() - image.getHeight() / 2;
+    Image image = ImageLoader.getSlickImage(ship.image);
+    double x = ship.x - image.getWidth() / 2;
+    double y = ship.y - image.getHeight() / 2;
 
-    double r = ship.getRotation() - Math.PI / 2;
+    double r = ship.rotation;
 
-    g.rotate(r, ship.getX(), ship.getY());
+    g.rotate(-r, ship.x, ship.y);
     g.draw(image, x, y);
-    g.rotate(-r, ship.getX(), ship.getY());
+    g.rotate(r, ship.x, ship.y);
   }
 
 }

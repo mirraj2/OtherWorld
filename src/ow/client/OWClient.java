@@ -1,22 +1,29 @@
 package ow.client;
 
+import java.awt.Rectangle;
 import java.io.IOException;
+
+import jexxus.client.ClientConnection;
+import jexxus.common.Connection;
+import jexxus.common.ConnectionListener;
+import jexxus.server.ServerConnection;
+
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
+import org.newdawn.slick.AppGameContainer;
+import org.newdawn.slick.BasicGame;
+import org.newdawn.slick.Color;
+import org.newdawn.slick.GameContainer;
+import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Input;
+import org.newdawn.slick.SlickException;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import jexxus.client.ClientConnection;
-import jexxus.common.Connection;
-import jexxus.common.ConnectionListener;
-import jexxus.server.ServerConnection;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
-import org.newdawn.slick.AppGameContainer;
-import org.newdawn.slick.BasicGame;
-import org.newdawn.slick.GameContainer;
-import org.newdawn.slick.Graphics;
-import org.newdawn.slick.SlickException;
 
 public class OWClient extends BasicGame implements ConnectionListener {
 
@@ -29,6 +36,10 @@ public class OWClient extends BasicGame implements ConnectionListener {
   private ClientConnection conn;
   private final ClientModel model = new ClientModel();
   private Ship myShip = null;
+  private BackgroundRenderer backgroundRenderer;
+  private GameContainer container;
+  private boolean mouseDown = false;
+  private int mouseX, mouseY;
 
   public OWClient() {
     super("Other World");
@@ -46,14 +57,85 @@ public class OWClient extends BasicGame implements ConnectionListener {
   @Override
   public void render(GameContainer container, Graphics gg) throws SlickException {
     SGraphics g = new SGraphics(gg);
-    model.render(g, container.getWidth(), container.getHeight());
+
+    int w = container.getWidth();
+    int h = container.getHeight();
+
+    g.setColor(Color.black).fillRect(0, 0, w, h);
+
+    Rectangle cameraLocation = model.getCameraBounds(w, h);
+    backgroundRenderer.render(cameraLocation, g);
+
+    model.render(g, w, h);
   }
 
   @Override
-  public void init(GameContainer container) throws SlickException {}
+  public void init(GameContainer container) throws SlickException {
+    this.container = container;
+    backgroundRenderer = new BackgroundRenderer();
+  }
 
   @Override
-  public void update(GameContainer container, int delta) throws SlickException {}
+  public void update(GameContainer container, int delta) throws SlickException {
+    if (mouseDown) {
+      Rectangle r = model.getCameraBounds(container.getWidth(), container.getHeight());
+      myShip.targetX = r.x + mouseX;
+      myShip.targetY = r.y + mouseY;
+    }
+
+    model.tick(delta);
+  }
+
+  @Override
+  public void mousePressed(int button, int x, int y) {
+    if (button != 0) {
+      return;
+    }
+
+    mouseDown = true;
+    mouseX = x;
+    mouseY = y;
+    orderShipToClick();
+  }
+
+  @Override
+  public void mouseDragged(int oldX, int oldY, int newX, int newY) {
+    mouseX = newX;
+    mouseY = newY;
+    orderShipToClick();
+  }
+
+  @Override
+  public void mouseMoved(int oldX, int oldY, int newX, int newY) {
+    mouseX = newX;
+    mouseY = newY;
+  }
+
+  @Override
+  public void mouseReleased(int button, int x, int y) {
+    if (button != 0) {
+      return;
+    }
+
+    mouseDown = false;
+    myShip.halt();
+  }
+
+  @Override
+  public void keyPressed(int key, char c) {
+    if (key == Input.KEY_ESCAPE) {
+      container.exit();
+      System.exit(0);
+    }
+  }
+
+  private void orderShipToClick() {
+    Rectangle r = model.getCameraBounds(container.getWidth(), container.getHeight());
+
+    myShip.targetX = r.x + mouseX;
+    myShip.targetY = r.y + mouseY;
+    myShip.rotateToTarget();
+  }
 
   @Override
   public void connectionBroken(Connection broken, boolean forced) {
@@ -72,13 +154,15 @@ public class OWClient extends BasicGame implements ConnectionListener {
       double y = o.get("y").getAsDouble();
 
       if (myShip == null) {
-        myShip = new Ship();
-        myShip.setImage("Mini.png");
+        myShip = new Ship("Mini.png", 200);
         model.add(myShip);
         model.focus(myShip);
       }
 
-      myShip.setLocation(x, y);
+      model.add(new Ship("Mini.png", 200).setLocation(x, y).halt());
+      // next step, make server spawn ships and have server move them around randomly
+
+      myShip.setLocation(x, y).halt();
     }
   }
 
@@ -89,7 +173,9 @@ public class OWClient extends BasicGame implements ConnectionListener {
     BasicConfigurator.configure();
 
     AppGameContainer appgc = new AppGameContainer(new OWClient());
-    appgc.setDisplayMode(1200, 800, false);
+    DisplayMode mode = Display.getDesktopDisplayMode();
+
+    appgc.setDisplayMode(mode.getWidth(), mode.getHeight(), true);
     appgc.start();
   }
 
