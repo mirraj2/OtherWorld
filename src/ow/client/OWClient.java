@@ -5,14 +5,9 @@ import java.io.IOException;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import jexxus.client.ClientConnection;
-import jexxus.common.Connection;
-import jexxus.common.ConnectionListener;
 import jexxus.common.Delivery;
-import jexxus.server.ServerConnection;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.lwjgl.opengl.Display;
@@ -25,13 +20,9 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import ow.client.model.ClientModel;
-import ow.client.model.Planet;
 import ow.client.model.Ship;
-import ow.client.model.Shot;
-import ow.common.Faction;
-import ow.common.ShipType;
 
-public class OWClient extends BasicGame implements ConnectionListener {
+public class OWClient extends BasicGame {
 
   private static final Logger logger = Logger.getLogger(OWClient.class);
 
@@ -39,10 +30,10 @@ public class OWClient extends BasicGame implements ConnectionListener {
 
   private static final String SERVER_IP = "localhost";
   private static final int PORT = 19883;
-  private static final JsonParser parser = new JsonParser();
 
-  private ClientConnection conn;
   private final ClientModel model = new ClientModel();
+  private final NetworkHandler networkHandler = new NetworkHandler(this, model);
+  private ClientConnection conn;
   private Ship myShip = null;
   private BackgroundRenderer backgroundRenderer;
   private GameContainer container;
@@ -52,7 +43,7 @@ public class OWClient extends BasicGame implements ConnectionListener {
     super("Other World");
 
     logger.info("Connecting to the server....");
-    conn = new ClientConnection(this, SERVER_IP, PORT, false);
+    conn = new ClientConnection(networkHandler, SERVER_IP, PORT, false);
     try {
       conn.connect(1000);
       logger.info("Connected!");
@@ -157,57 +148,9 @@ public class OWClient extends BasicGame implements ConnectionListener {
     conn.send(o.toString().getBytes(Charsets.UTF_8), Delivery.RELIABLE);
   }
 
-  @Override
-  public void connectionBroken(Connection broken, boolean forced) {
-    logger.info("Lost connection to the server.");
+  public void setMyShip(Ship ship){
+    this.myShip = ship;
   }
-
-  @Override
-  public void receive(byte[] data, Connection from) {
-    JsonObject o = parser.parse(new String(data, Charsets.UTF_8)).getAsJsonObject();
-
-    String command = o.get("command").getAsString().toLowerCase();
-
-    if (command.equals("ship")) {
-      int id = o.get("id").getAsInt();
-      double x = o.get("x").getAsDouble();
-      double y = o.get("y").getAsDouble();
-      double rotation = o.get("rotation").getAsDouble();
-
-      Ship ship = new Ship(id, Faction.valueOf(o.get("faction").getAsString()),
-          ShipType.valueOf(o.get("type").getAsString()))
-          .setLocation(x, y).setRotation(rotation).halt();
-      model.add(ship);
-
-    } else if (command.equals("planet")) {
-      model.add(new Planet(o.get("name").getAsString(), o.get("x").getAsDouble(), o.get("y")
-          .getAsDouble()));
-    } else if (command.equals("update")) {
-      int id = o.get("id").getAsInt();
-      Ship ship = model.getShip(id);
-      ship.x = o.get("x").getAsDouble();
-      ship.y = o.get("y").getAsDouble();
-      ship.rotation = o.get("rotation").getAsDouble();
-      ship.moving = o.get("moving").getAsBoolean();
-    } else if (command.equals("shots")) {
-      for (JsonElement e : o.getAsJsonArray("shots")) {
-        JsonObject s = e.getAsJsonObject();
-        model.add(new Shot(s.get("id").getAsInt(), s.get("x").getAsDouble(), s.get("y")
-            .getAsDouble(), s.get("rotation").getAsDouble(), s.get("velocity").getAsDouble(), s
-            .get("max_distance").getAsDouble()));
-      }
-    } else if (command.equals("take_control")) {
-      int id = o.get("id").getAsInt();
-
-      myShip = model.getShip(id);
-      model.focus(myShip);
-    } else {
-      logger.warn("unknown message: " + o);
-    }
-  }
-
-  @Override
-  public void clientConnected(ServerConnection conn) {}
 
   public static void main(String[] args) throws Exception {
     BasicConfigurator.configure();
@@ -221,7 +164,7 @@ public class OWClient extends BasicGame implements ConnectionListener {
     if (FULLSCREEN) {
       container.setDisplayMode(mode.getWidth(), mode.getHeight(), true);
     } else {
-      container.setDisplayMode(mode.getWidth() / 2, mode.getHeight() / 2, false);
+      container.setDisplayMode(2 * mode.getWidth() / 3, 2 * mode.getHeight() / 3, false);
     }
 
     container.start();
