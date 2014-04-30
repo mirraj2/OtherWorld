@@ -173,17 +173,12 @@ public class OWClient extends BasicGame implements ConnectionListener {
       double x = o.get("x").getAsDouble();
       double y = o.get("y").getAsDouble();
       double rotation = o.get("rotation").getAsDouble();
-      boolean mine = o.has("control");
 
       Ship ship = new Ship(id, Faction.valueOf(o.get("faction").getAsString()),
           ShipType.valueOf(o.get("type").getAsString()))
           .setLocation(x, y).setRotation(rotation).halt();
       model.add(ship);
 
-      if (mine) {
-        myShip = ship;
-        model.focus(myShip);
-      }
     } else if (command.equals("planet")) {
       model.add(new Planet(o.get("name").getAsString(), o.get("x").getAsDouble(), o.get("y")
           .getAsDouble()));
@@ -201,8 +196,12 @@ public class OWClient extends BasicGame implements ConnectionListener {
             .getAsDouble(), s.get("rotation").getAsDouble(), s.get("velocity").getAsDouble(), s
             .get("max_distance").getAsDouble()));
       }
-    }
-    else {
+    } else if (command.equals("take_control")) {
+      int id = o.get("id").getAsInt();
+
+      myShip = model.getShip(id);
+      model.focus(myShip);
+    } else {
       logger.warn("unknown message: " + o);
     }
   }

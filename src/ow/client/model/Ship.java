@@ -1,6 +1,7 @@
 package ow.client.model;
 
 import ow.common.Faction;
+import ow.common.OMath;
 import ow.common.ShipType;
 
 public class Ship {
@@ -22,10 +23,7 @@ public class Ship {
   }
 
   public Ship rotateToTarget(double targetX, double targetY) {
-    rotation = Math.atan2(targetX - x, targetY - y) - Math.PI / 2;
-    if (rotation < 0) {
-      rotation += Math.PI * 2;
-    }
+    rotation = OMath.getTargetRotation(x, y, targetX, targetY);
     return this;
   }
 

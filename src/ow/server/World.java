@@ -14,6 +14,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.log4j.Logger;
 import ow.common.Faction;
 import ow.common.ShipType;
+import ow.server.brain.FedSpawner;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -22,15 +23,23 @@ public class World {
   @SuppressWarnings("unused")
   private static final Logger logger = Logger.getLogger(World.class);
 
+  private final OWServer server;
   private Map<Integer, Ship> ships = Maps.newConcurrentMap();
   private List<Planet> planets = Lists.newArrayList();
   private List<Shot> shots = Lists.newCopyOnWriteArrayList();
+  private List<AI> ais = Lists.newCopyOnWriteArrayList();
 
-  public World() {
+  public World(OWServer server) {
+    this.server = server;
+
     planets.add(new Planet("Mars", 1000, 1000));
 
+    Ship fedStation = new Ship(Faction.FEDERATION, ShipType.STATION, new Point(600, 1000));
+
     add(new Ship(Faction.EXPLORERS, ShipType.STATION, new Point(1400, 1000)).rotation(Math.PI / 6));
-    add(new Ship(Faction.FEDERATION, ShipType.STATION, new Point(600, 1000)));
+    add(fedStation);
+    
+    ais.add(new FedSpawner(this, fedStation));
 
     Executors.newSingleThreadExecutor().execute(updater);
   }
@@ -48,24 +57,14 @@ public class World {
     return ret;
   }
 
-  private final Runnable updater = new Runnable() {
-    @Override
-    public void run() {
-      long lastTime = System.nanoTime();
-      while (true) {
-        long now = System.nanoTime();
+  /**
+   * Update all connected players about changes to this ship.
+   */
+  public void sendUpdate(Ship ship) {
+    server.sendUpdate(ship);
+  }
 
-        double millis = (now - lastTime) / 1000000.0;
-
-        update(millis);
-
-        lastTime = now;
-        Uninterruptibles.sleepUninterruptibly(1, TimeUnit.MILLISECONDS);
-      }
-    }
-  };
-
-  private void update(double millis) {
+  private void tick(double millis) {
     for (Ship ship : ships.values()) {
       ship.tick(millis);
     }
@@ -78,12 +77,21 @@ public class World {
       }
     }
     shots.removeAll(expiredShots);
+
+    for (AI brain : ais) {
+      brain.tick(millis);
+    }
   }
 
   public void add(Ship ship) {
     checkNotNull(ship);
     
     this.ships.put(ship.id, ship);
+    server.onShipAdded(ship);
+  }
+
+  public void addAI(AI ai) {
+    this.ais.add(ai);
   }
 
   public Ship getShip(int id) {
@@ -107,5 +115,26 @@ public class World {
   public List<Planet> getPlanets() {
     return planets;
   }
+
+  public OWServer getServer() {
+    return server;
+  }
+
+  private final Runnable updater = new Runnable() {
+    @Override
+    public void run() {
+      long lastTime = System.nanoTime();
+      while (true) {
+        long now = System.nanoTime();
+
+        double millis = (now - lastTime) / 1000000.0;
+
+        tick(millis);
+
+        lastTime = now;
+        Uninterruptibles.sleepUninterruptibly(1, TimeUnit.MILLISECONDS);
+      }
+    }
+  };
 
 }

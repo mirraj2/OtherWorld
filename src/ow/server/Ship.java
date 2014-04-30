@@ -16,13 +16,17 @@ public class Ship extends Entity {
   public final double maxSpeed;
   public final Collection<Point> gunLocations;
 
-  public Ship(Faction faction, ShipType type, Point initialLocation) {
+  public Ship(Faction faction, ShipType type, Point location) {
+    this(faction, type, location.x, location.y);
+  }
+
+  public Ship(Faction faction, ShipType type, double x, double y) {
     this.faction = faction;
     this.type = type;
+    this.x = x;
+    this.y = y;
     this.maxSpeed = type.getMaxSpeed();
     this.gunLocations = type.getGunLocations();
-
-    setLocation(initialLocation);
   }
 
   public void tick(double millis) {
@@ -38,6 +42,11 @@ public class Ship extends Entity {
 
   public Ship rotation(double rotation) {
     this.rotation = rotation;
+    return this;
+  }
+
+  public Ship moving(boolean moving) {
+    this.moving = moving;
     return this;
   }
 

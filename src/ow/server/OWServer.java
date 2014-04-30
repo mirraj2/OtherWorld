@@ -28,19 +28,13 @@ public class OWServer implements ConnectionListener {
   private static final int PORT = 19883;
   private static final JsonParser parser = new JsonParser();
 
-  private final World world = new World();
-
   private final Map<Connection, Ship> connectionShips = Maps.newConcurrentMap();
+  private final World world = new World(this);
+
 
   private void sendFullUpdate(ServerConnection conn) {
-    Ship clientShip = connectionShips.get(conn);
-
     for (Ship ship : world.getShips()) {
-      JsonObject o = createShipObject(ship);
-      if (ship == clientShip) {
-        o.addProperty("control", true);
-      }
-      send(o, conn);
+      send(createShipObject(ship), conn);
     }
 
     for (Planet planet : world.getPlanets()) {
@@ -48,8 +42,12 @@ public class OWServer implements ConnectionListener {
     }
   }
 
-  private void onShipAdded(Ship ship) {
+  public void onShipAdded(Ship ship) {
     sendToAll(createShipObject(ship));
+  }
+  
+  public void sendUpdate(Ship ship) {
+    sendToAll(createShipUpdate(ship));
   }
 
   private void sendToAllBut(JsonObject o, Connection sender) {
@@ -63,6 +61,17 @@ public class OWServer implements ConnectionListener {
 
   private void sendToAll(JsonObject o) {
     sendToAllBut(o, null);
+  }
+
+  public static JsonObject createShipUpdate(Ship ship) {
+    JsonObject o = new JsonObject();
+    o.addProperty("command", "update");
+    o.addProperty("id", ship.id);
+    o.addProperty("x", ship.x);
+    o.addProperty("y", ship.y);
+    o.addProperty("rotation", ship.rotation);
+    o.addProperty("moving", ship.moving);
+    return o;
   }
 
   private JsonObject createShipObject(Ship ship) {
@@ -145,7 +154,11 @@ public class OWServer implements ConnectionListener {
     world.add(clientShip);
     connectionShips.put(conn, clientShip);
     sendFullUpdate(conn);
-    onShipAdded(clientShip);
+
+    JsonObject o = new JsonObject();
+    o.addProperty("command", "take_control");
+    o.addProperty("id", clientShip.id);
+    send(o, conn);
   }
 
   private void send(JsonObject o, Connection conn) {
