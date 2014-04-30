@@ -12,6 +12,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.log4j.Logger;
+import org.newdawn.slick.geom.Line;
+import org.newdawn.slick.geom.Rectangle;
 import ow.common.Faction;
 import ow.common.ShipType;
 import ow.server.brain.FedSpawner;
@@ -49,7 +51,7 @@ public class World {
     for (Point p : shooter.gunLocations) {
       double xOffset = p.x * Math.cos(shooter.rotation) - p.y * Math.sin(shooter.rotation);
       double yOffset = -p.y * Math.cos(shooter.rotation) - p.x * Math.sin(shooter.rotation);
-      ret.add(new Shot(shooter.x + xOffset, shooter.y + yOffset, shooter.rotation));
+      ret.add(new Shot(shooter, shooter.x + xOffset, shooter.y + yOffset, shooter.rotation));
     }
 
     shots.addAll(ret);
@@ -71,7 +73,15 @@ public class World {
 
     List<Shot> expiredShots = Lists.newArrayList();
     for (Shot shot : shots) {
+      double x1 = shot.x, y1 = shot.y;
       shot.tick(millis);
+      double x2 = shot.x, y2 = shot.y;
+
+      Ship intersection = getIntersection(x1, y1, x2, y2, shot.shooter.faction);
+      if (intersection != null) {
+        // explode the shot
+      }
+
       if (shot.hasExpired()) {
         expiredShots.add(shot);
       }
@@ -81,6 +91,20 @@ public class World {
     for (AI brain : ais) {
       brain.tick(millis);
     }
+  }
+
+  private Ship getIntersection(double x1, double y1, double x2, double y2, Faction shooterFaction) {
+    Line line = new Line((float) x1, (float) y1, (float) x2, (float) y2);
+    for (Ship ship : ships.values()) {
+      if (ship.faction == shooterFaction) {
+        continue;
+      }
+      // TODO
+      if (line.intersects(new Rectangle())) {
+        return ship;
+      }
+    }
+    return null;
   }
 
   public void add(Ship ship) {

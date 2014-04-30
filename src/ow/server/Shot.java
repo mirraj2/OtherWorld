@@ -4,12 +4,14 @@ import ow.common.OMath;
 
 public class Shot extends Entity {
 
-  public double startX, startY;
+  public final Ship shooter;
+  public final double startX, startY;
   public double x, y, rotation;
   public double velocity = 700;
-  public double maxDistance = 800;
+  public double maxDistance = 400;
 
-  public Shot(double x, double y, double rotation) {
+  public Shot(Ship shooter, double x, double y, double rotation) {
+    this.shooter = shooter;
     this.x = startX = x;
     this.y = startY = y;
     this.rotation = rotation;

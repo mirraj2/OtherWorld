@@ -47,7 +47,7 @@ public class FedSpawner extends AI {
     double r = Math.random() * Math.PI * 2;
     double x = station.x;
     double y = station.y;
-    Ship ship = new Ship(Faction.FEDERATION, ShipType.MINI, x, y).rotation(r);
+    Ship ship = new Ship(Faction.FEDERATION, ShipType.SPECTRE, x, y).rotation(r);
     world.add(ship);
     world.addAI(new ProtectAI(world, ship, station));
   }
