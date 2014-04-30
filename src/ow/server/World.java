@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.log4j.Logger;
+import ow.common.Faction;
 import ow.common.ShipType;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -21,8 +22,6 @@ public class World {
   @SuppressWarnings("unused")
   private static final Logger logger = Logger.getLogger(World.class);
 
-  private final Point spawnLocation = new Point(1400, 900);
-
   private Map<Integer, Ship> ships = Maps.newConcurrentMap();
   private List<Planet> planets = Lists.newArrayList();
   private List<Shot> shots = Lists.newCopyOnWriteArrayList();
@@ -30,8 +29,8 @@ public class World {
   public World() {
     planets.add(new Planet("Mars", 1000, 1000));
 
-    Ship station = new Ship(ShipType.STATION, new Point(spawnLocation.x, spawnLocation.y + 80));
-    add(station);
+    add(new Ship(Faction.EXPLORERS, ShipType.STATION, new Point(1400, 1000)).rotation(Math.PI / 6));
+    add(new Ship(Faction.FEDERATION, ShipType.STATION, new Point(600, 1000)));
 
     Executors.newSingleThreadExecutor().execute(updater);
   }
@@ -101,8 +100,8 @@ public class World {
     return ImmutableList.copyOf(ships.values());
   }
 
-  public Point getSpawnLocation() {
-    return spawnLocation;
+  public Point getPlayerSpawnLocation() {
+    return new Point(1400, 900);
   }
 
   public List<Planet> getPlanets() {

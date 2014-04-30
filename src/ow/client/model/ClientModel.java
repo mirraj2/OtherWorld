@@ -12,6 +12,7 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.Image;
 import ow.client.ImageLoader;
 import ow.client.SGraphics;
+import ow.common.Faction;
 
 public class ClientModel {
 
@@ -94,6 +95,7 @@ public class ClientModel {
 
   private void render(SGraphics g, Ship ship) {
     Image image = ImageLoader.getSlickImage("ships/" + ship.type.getImageName());
+    adjustImage(image, ship.faction);
 
     double x = ship.x - image.getWidth() / 2;
     double y = ship.y - image.getHeight() / 2;
@@ -103,6 +105,11 @@ public class ClientModel {
     g.rotate(-r, ship.x, ship.y);
     g.draw(image, x, y);
     g.rotate(r, ship.x, ship.y);
+  }
+
+  private void adjustImage(Image image, Faction faction) {
+    Color c = faction.getColor();
+    image.setImageColor(c.r, c.g, c.b);
   }
 
 }

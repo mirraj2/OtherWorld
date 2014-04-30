@@ -1,5 +1,6 @@
 package ow.client.model;
 
+import ow.common.Faction;
 import ow.common.ShipType;
 
 public class Ship {
@@ -9,11 +10,13 @@ public class Ship {
   public double rotation;
   public boolean moving = false;
 
+  public final Faction faction;
   public final ShipType type;
-  private final double maxSpeed;
+  public final double maxSpeed;
 
-  public Ship(int id, ShipType type) {
+  public Ship(int id, Faction faction, ShipType type) {
     this.id = id;
+    this.faction = faction;
     this.type = type;
     this.maxSpeed = type.getMaxSpeed();
   }

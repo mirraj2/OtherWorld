@@ -16,6 +16,7 @@ import jexxus.server.Server;
 import jexxus.server.ServerConnection;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import ow.common.Faction;
 import ow.common.ShipType;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -68,6 +69,7 @@ public class OWServer implements ConnectionListener {
     JsonObject o = new JsonObject();
     o.addProperty("command", "ship");
     o.addProperty("id", ship.id);
+    o.addProperty("faction", ship.faction.name());
     o.addProperty("type", ship.type.name());
     o.addProperty("x", ship.x);
     o.addProperty("y", ship.y);
@@ -139,7 +141,7 @@ public class OWServer implements ConnectionListener {
   public void clientConnected(ServerConnection conn) {
     logger.debug("Client connected: " + conn);
 
-    Ship clientShip = new Ship(ShipType.MINI, world.getSpawnLocation());
+    Ship clientShip = new Ship(Faction.EXPLORERS, ShipType.MINI, world.getPlayerSpawnLocation());
     world.add(clientShip);
     connectionShips.put(conn, clientShip);
     sendFullUpdate(conn);

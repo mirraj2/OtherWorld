@@ -28,6 +28,7 @@ import ow.client.model.ClientModel;
 import ow.client.model.Planet;
 import ow.client.model.Ship;
 import ow.client.model.Shot;
+import ow.common.Faction;
 import ow.common.ShipType;
 
 public class OWClient extends BasicGame implements ConnectionListener {
@@ -174,7 +175,8 @@ public class OWClient extends BasicGame implements ConnectionListener {
       double rotation = o.get("rotation").getAsDouble();
       boolean mine = o.has("control");
 
-      Ship ship = new Ship(id, ShipType.valueOf(o.get("type").getAsString()))
+      Ship ship = new Ship(id, Faction.valueOf(o.get("faction").getAsString()),
+          ShipType.valueOf(o.get("type").getAsString()))
           .setLocation(x, y).setRotation(rotation).halt();
       model.add(ship);
 
