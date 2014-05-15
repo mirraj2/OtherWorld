@@ -7,7 +7,7 @@ public class Shot extends Entity {
   public final Ship shooter;
   public final double startX, startY;
   public double x, y, rotation;
-  public double velocity = 700;
+  public double velocity = 70;
   public double maxDistance = 400;
 
   public Shot(Ship shooter, double x, double y, double rotation) {

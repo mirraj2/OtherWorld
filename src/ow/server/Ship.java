@@ -1,8 +1,12 @@
 package ow.server;
 
 import java.awt.Point;
+import java.awt.image.BufferedImage;
 import java.util.Collection;
 
+import org.newdawn.slick.geom.Rectangle;
+import org.newdawn.slick.geom.Shape;
+import ow.client.ImageLoader;
 import ow.common.Faction;
 import ow.common.ShipType;
 
@@ -15,6 +19,7 @@ public class Ship extends Entity {
   public double rotation = Math.PI / 2;
   public final double maxSpeed;
   public final Collection<Point> gunLocations;
+  public final BufferedImage image;
 
   public Ship(Faction faction, ShipType type, Point location) {
     this(faction, type, location.x, location.y);
@@ -27,6 +32,7 @@ public class Ship extends Entity {
     this.y = y;
     this.maxSpeed = type.getMaxSpeed();
     this.gunLocations = type.getGunLocations();
+    this.image = ImageLoader.getImage("ships/" + type.getImageName());
   }
 
   public void tick(double millis) {
@@ -48,6 +54,11 @@ public class Ship extends Entity {
   public Ship moving(boolean moving) {
     this.moving = moving;
     return this;
+  }
+
+  public Shape getCollisionArea() {
+    int size = Math.max(image.getWidth(), image.getHeight());
+    return new Rectangle((float) (x - size / 2), (float) (y - size / 2), size, size);
   }
 
 }

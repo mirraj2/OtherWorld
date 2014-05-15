@@ -46,6 +46,14 @@ public class OWServer implements ConnectionListener {
     sendToAll(createShipObject(ship));
   }
   
+  public void onHit(Shot shot, Ship ship) {
+    JsonObject o = new JsonObject();
+    o.addProperty("command", "hit");
+    o.addProperty("shot", shot.id);
+    o.addProperty("ship", ship.id);
+    sendToAll(o);
+  }
+
   public void sendUpdate(Ship ship) {
     sendToAll(createShipUpdate(ship));
   }

@@ -69,6 +69,10 @@ public class NetworkHandler implements ConnectionListener {
       Ship ship = model.getShip(id);
       client.setMyShip(ship);
       model.focus(ship);
+    } else if (command.equals("hit")) {
+      int shotID = o.get("shot").getAsInt();
+
+      model.removeShot(shotID);
     } else {
       logger.warn("unknown message: " + o);
     }

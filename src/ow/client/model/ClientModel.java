@@ -21,7 +21,7 @@ public class ClientModel {
 
   private Map<Integer, Ship> ships = ImmutableMap.of();
   private List<Planet> planets = Lists.newCopyOnWriteArrayList();
-  private List<Shot> shots = Lists.newCopyOnWriteArrayList();
+  private Map<Integer, Shot> shots = Maps.newConcurrentMap();
 
   private Ship focus = null;
 
@@ -40,7 +40,11 @@ public class ClientModel {
   }
 
   public void add(Shot shot) {
-    shots.add(shot);
+    shots.put(shot.id, shot);
+  }
+
+  public void removeShot(int shotID) {
+    shots.remove(shotID);
   }
 
   public Ship getShip(int id) {
@@ -56,14 +60,16 @@ public class ClientModel {
       ship.tick(delta);
     }
 
-    List<Shot> expiredShots = Lists.newArrayList();
-    for (Shot shot : shots) {
+    List<Integer> expiredShots = Lists.newArrayList();
+    for (Shot shot : shots.values()) {
       shot.tick(delta);
       if(shot.hasExpired()){
-        expiredShots.add(shot);
+        expiredShots.add(shot.id);
       }
     }
-    shots.removeAll(expiredShots);
+    for (Integer expiredShot : expiredShots) {
+      shots.remove(expiredShot);
+    }
   }
 
   public void render(SGraphics g, int w, int h) {
@@ -83,7 +89,7 @@ public class ClientModel {
       render(g, ship);
     }
 
-    for (Shot shot : shots) {
+    for (Shot shot : shots.values()) {
       g.setColor(Color.orange).fillCircle(shot.x, shot.y, 2);
     }
   }
