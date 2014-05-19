@@ -44,8 +44,6 @@ public class World {
     
     ais.add(new FedSpawner(this, fedStation));
 
-    // add(new Ship(Faction.FEDERATION, ShipType.TEST, new Point(600, 1000)).rotation(Math.PI / 4));
-
     Executors.newSingleThreadExecutor().execute(updater);
   }
   
@@ -78,7 +76,9 @@ public class World {
     tickProjectiles(millis);
 
     for (AI brain : ais) {
-      brain.tick(millis);
+      if (brain.tick(millis)) {
+        ais.remove(brain);
+      }
     }
   }
 
@@ -93,7 +93,14 @@ public class World {
       if (hit != null) {
         if (isPixelIntersection(shot, hit)) {
           // explode the shot
-          server.onHit(shot, hit);
+          double damage = 8 + Math.random() * 4;
+          hit.hp = Math.max(0, hit.hp - damage);
+
+          if (hit.hp == 0) {
+            ships.remove(hit.id);
+          }
+
+          server.onHit(shot, hit, damage);
           expiredShots.add(shot);
         }
       } else {

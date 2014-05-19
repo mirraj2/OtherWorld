@@ -8,6 +8,9 @@ public abstract class AI {
     this.world = world;
   }
 
-  public abstract void tick(double millis);
+  /**
+   * @return 'true' if this AI has completed and should no longer be ticked.
+   */
+  public abstract boolean tick(double millis);
 
 }

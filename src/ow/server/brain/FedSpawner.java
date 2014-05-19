@@ -18,12 +18,17 @@ public class FedSpawner extends AI {
   }
 
   @Override
-  public void tick(double millis) {
+  public boolean tick(double millis) {
+    if (station.isDead()) {
+      return true;
+    }
+
     timeSinceLastSpawnAttempt += millis;
     if (timeSinceLastSpawnAttempt >= 500) {
       spawnNewShips();
       timeSinceLastSpawnAttempt = 0;
     }
+    return false;
   }
 
   private void spawnNewShips() {

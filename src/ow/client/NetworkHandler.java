@@ -40,14 +40,16 @@ public class NetworkHandler implements ConnectionListener {
       double x = o.get("x").getAsDouble();
       double y = o.get("y").getAsDouble();
       double rotation = o.get("rotation").getAsDouble();
+      double maxHP = o.get("max_hp").getAsDouble();
+      double hp = o.get("hp").getAsDouble();
 
       Ship ship = new Ship(id, Faction.valueOf(o.get("faction").getAsString()),
-          ShipType.valueOf(o.get("type").getAsString()))
+          ShipType.valueOf(o.get("type").getAsString()), hp, maxHP)
           .setLocation(x, y).setRotation(rotation).halt();
-      model.add(ship);
+      model.addShip(ship);
 
     } else if (command.equals("planet")) {
-      model.add(new Planet(o.get("name").getAsString(), o.get("x").getAsDouble(), o.get("y")
+      model.addPlanet(new Planet(o.get("name").getAsString(), o.get("x").getAsDouble(), o.get("y")
           .getAsDouble()));
     } else if (command.equals("update")) {
       int id = o.get("id").getAsInt();
@@ -59,7 +61,7 @@ public class NetworkHandler implements ConnectionListener {
     } else if (command.equals("shots")) {
       for (JsonElement e : o.getAsJsonArray("shots")) {
         JsonObject s = e.getAsJsonObject();
-        model.add(new Shot(s.get("id").getAsInt(), s.get("x").getAsDouble(), s.get("y")
+        model.addShot(new Shot(s.get("id").getAsInt(), s.get("x").getAsDouble(), s.get("y")
             .getAsDouble(), s.get("rotation").getAsDouble(), s.get("velocity").getAsDouble(), s
             .get("max_distance").getAsDouble()));
       }
@@ -71,6 +73,15 @@ public class NetworkHandler implements ConnectionListener {
       model.focus(ship);
     } else if (command.equals("hit")) {
       int shotID = o.get("shot").getAsInt();
+      int shipID = o.get("ship").getAsInt();
+      double damage = o.get("damage").getAsDouble();
+
+      Ship ship = model.getShip(shipID);
+      ship.hp = Math.max(0, ship.hp - damage);
+
+      if (ship.hp == 0) {
+        model.removeShip(shipID);
+      }
 
       model.removeShot(shotID);
     } else {

@@ -46,11 +46,12 @@ public class OWServer implements ConnectionListener {
     sendToAll(createShipObject(ship));
   }
   
-  public void onHit(Shot shot, Ship ship) {
+  public void onHit(Shot shot, Ship ship, double damage) {
     JsonObject o = new JsonObject();
     o.addProperty("command", "hit");
     o.addProperty("shot", shot.id);
     o.addProperty("ship", ship.id);
+    o.addProperty("damage", damage);
     sendToAll(o);
   }
 
@@ -92,6 +93,8 @@ public class OWServer implements ConnectionListener {
     o.addProperty("y", ship.y);
     o.addProperty("rotation", ship.rotation);
     o.addProperty("moving", ship.moving);
+    o.addProperty("max_hp", ship.maxHP);
+    o.addProperty("hp", ship.hp);
     return o;
   }
 

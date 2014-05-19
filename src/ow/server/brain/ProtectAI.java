@@ -33,13 +33,19 @@ public class ProtectAI extends AI {
   }
 
   @Override
-  public void tick(double millis) {
+  public boolean tick(double millis) {
+    if (ship.isDead()) {
+      return true;
+    }
+
     // for now just fly around the ship we're protecting.
     timeUntilNextPatrol -= millis;
     if (timeUntilNextPatrol <= 0) {
       timeUntilNextPatrol = PATROL_CYCLE;
       patrol();
     }
+
+    return false;
   }
 
 }

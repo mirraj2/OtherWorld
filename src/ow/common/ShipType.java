@@ -20,6 +20,10 @@ public enum ShipType {
     return gunLocations.get(this);
   }
 
+  public double getHP() {
+    return hitpoints.get(this);
+  }
+
   public String getImageName() {
     StringBuilder sb = new StringBuilder();
     sb.append(name().toLowerCase());
@@ -41,6 +45,13 @@ public enum ShipType {
           .put(MINI, new Point(11, 0))
           .put(SPECTRE, new Point(22, -13))
           .put(SPECTRE, new Point(22, 13))
+          .build();
+
+  private static final Map<ShipType, Double> hitpoints =
+      ImmutableMap.<ShipType, Double>builder()
+          .put(MINI, 25d)
+          .put(SPECTRE, 40d)
+          .put(STATION, 500d)
           .build();
 
 }

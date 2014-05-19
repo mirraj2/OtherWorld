@@ -3,8 +3,9 @@ package ow.client.model;
 import java.awt.Rectangle;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.log4j.Logger;
@@ -14,32 +15,41 @@ import ow.client.ImageLoader;
 import ow.client.SGraphics;
 import ow.common.Faction;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 public class ClientModel {
 
   @SuppressWarnings("unused")
   private static final Logger logger = Logger.getLogger(ClientModel.class);
 
-  private Map<Integer, Ship> ships = ImmutableMap.of();
-  private List<Planet> planets = Lists.newCopyOnWriteArrayList();
-  private Map<Integer, Shot> shots = Maps.newConcurrentMap();
+  private SortedMap<Integer, Ship> ships = ImmutableSortedMap.of();
+  private final List<Planet> planets = Lists.newCopyOnWriteArrayList();
+  private final Map<Integer, Shot> shots = Maps.newConcurrentMap();
 
   private Ship focus = null;
 
-  public void add(Ship ship) {
+  public void addShip(Ship ship) {
     if (ships.containsKey(ship.id)) {
       return;
     }
-    Map<Integer, Ship> newShipsMap = Maps.newTreeMap();
-    newShipsMap.putAll(ships);
+    Map<Integer, Ship> newShipsMap = Maps.newTreeMap(this.ships);
     newShipsMap.put(ship.id, ship);
-    this.ships = ImmutableMap.copyOf(newShipsMap);
+    this.ships = ImmutableSortedMap.copyOf(newShipsMap);
   }
 
-  public void add(Planet planet) {
+  public void removeShip(int shipID) {
+    checkArgument(ships.containsKey(shipID));
+
+    Map<Integer, Ship> newShipsMap = Maps.newTreeMap(this.ships);
+    newShipsMap.remove(shipID);
+    this.ships = ImmutableSortedMap.copyOf(newShipsMap);
+  }
+
+  public void addPlanet(Planet planet) {
     this.planets.add(planet);
   }
 
-  public void add(Shot shot) {
+  public void addShot(Shot shot) {
     shots.put(shot.id, shot);
   }
 
@@ -111,6 +121,22 @@ public class ClientModel {
     g.rotate(-r, ship.x, ship.y);
     g.draw(image, x, y);
     g.rotate(r, ship.x, ship.y);
+
+    y -= 6;
+    int barHeight = 4;
+    double p = ship.hp / ship.maxHP;
+
+    g.setColor(Color.black);
+    g.fillRect(x, y, image.getWidth(), barHeight);
+
+    if (p < .2) {
+      g.setColor(Color.red);
+    } else if (p < .5) {
+      g.setColor(Color.yellow);
+    } else {
+      g.setColor(Color.green);
+    }
+    g.fillRect(x + 1, y + 1, p * image.getWidth() - 2, barHeight - 2);
   }
 
   private void adjustImage(Image image, Faction faction) {

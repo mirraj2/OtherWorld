@@ -10,16 +10,19 @@ public class Ship {
   public double x, y;
   public double rotation;
   public boolean moving = false;
+  public double hp;
 
   public final Faction faction;
   public final ShipType type;
-  public final double maxSpeed;
+  public final double maxSpeed, maxHP;
 
-  public Ship(int id, Faction faction, ShipType type) {
+  public Ship(int id, Faction faction, ShipType type, double hp, double maxHP) {
     this.id = id;
     this.faction = faction;
     this.type = type;
     this.maxSpeed = type.getMaxSpeed();
+    this.hp = hp;
+    this.maxHP = maxHP;
   }
 
   public Ship rotateToTarget(double targetX, double targetY) {
