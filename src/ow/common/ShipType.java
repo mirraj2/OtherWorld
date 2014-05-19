@@ -31,7 +31,7 @@ public enum ShipType {
   private static final Map<ShipType, Double> maxSpeeds =
       ImmutableMap.<ShipType, Double>builder()
           .put(MINI, 200d)
-          .put(SPECTRE, 15d)
+          .put(SPECTRE, 150d)
           .put(STATION, 1d)
           .put(TEST, 1d)
           .build();

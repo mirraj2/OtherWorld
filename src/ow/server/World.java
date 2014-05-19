@@ -17,6 +17,7 @@ import org.newdawn.slick.geom.Line;
 import org.newdawn.slick.geom.Shape;
 import ow.common.Faction;
 import ow.common.ShipType;
+import ow.server.brain.FedSpawner;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -36,14 +37,14 @@ public class World {
 
     planets.add(new Planet("Mars", 1000, 1000));
 
-    // Ship fedStation = new Ship(Faction.FEDERATION, ShipType.STATION, new Point(600, 1000));
+    Ship fedStation = new Ship(Faction.FEDERATION, ShipType.STATION, new Point(600, 1000));
 
     add(new Ship(Faction.EXPLORERS, ShipType.STATION, new Point(1400, 1000)).rotation(Math.PI / 6));
-    // add(fedStation);
+    add(fedStation);
     
-    // ais.add(new FedSpawner(this, fedStation));
+    ais.add(new FedSpawner(this, fedStation));
 
-    add(new Ship(Faction.FEDERATION, ShipType.TEST, new Point(600, 1000)).rotation(Math.PI / 4));
+    // add(new Ship(Faction.FEDERATION, ShipType.TEST, new Point(600, 1000)).rotation(Math.PI / 4));
 
     Executors.newSingleThreadExecutor().execute(updater);
   }
@@ -104,61 +105,29 @@ public class World {
     shots.removeAll(expiredShots);
   }
 
-  // double r = -shooter.rotation;
-  // double xOffset = p.x * Math.cos(r) - p.y * Math.sin(r);
-  // double yOffset = p.y * Math.cos(r) + p.x * Math.sin(r);
-
+  // Instead of rotating the image based on the ship's rotation,
+  // we can inverse-rotate the shot and then use the regular image.
   private boolean isPixelIntersection(Shot shot, Ship hit) {
     BufferedImage bi = hit.image;
 
-    // Instead of rotating the image based on the ship's rotation,
-    // we can inverse-rotate the shot and then use the regular image.
-
-    System.out.println("Testing if " + shot.id + " hit ship " + hit.id);
-
     double x = shot.x - hit.x;
     double y = shot.y - hit.y;
-    double r = -hit.rotation;
+    double r = hit.rotation;
 
     double xOffset = x * Math.cos(r) - y * Math.sin(r);
     double yOffset = y * Math.cos(r) + x * Math.sin(r);
 
-    System.out.println("x: " + x);
-    System.out.println("y: " + y);
-    System.out.println("rotation: " + r);
-    System.out.println("sin(rotation): " + Math.sin(r));
-    System.out.println("cos(rotation): " + Math.cos(r));
-
-    System.out.println("xOffset: " + xOffset);
-    System.out.println("yOffset: " + yOffset);
-
     double x2 = xOffset;
     double y2 = yOffset;
-
-    // double y2 = x * Math.cos(rotation) - y * Math.sin(rotation);
-    // double x2 = -y * Math.cos(rotation) + x * Math.sin(rotation);
-
-    System.out.println("x2: " + x2);
-    System.out.println("y2: " + y2);
 
     int xPixel = (int) (bi.getWidth() / 2 + x2);
     int yPixel = (int) (bi.getHeight() / 2 + y2);
 
-    System.out.println("xPixel: " + xPixel);
-    System.out.println("yPixel: " + yPixel);
-
-    System.out.println("image width: " + bi.getWidth());
-    System.out.println("image height: " + bi.getHeight());
-
     if (xPixel < 0 || yPixel < 0 || xPixel >= bi.getWidth() || yPixel >= bi.getHeight()) {
-      System.out.println();
       return false;
     }
 
     int rgb = bi.getRGB(xPixel, yPixel);
-
-    System.out.println("RGB: " + rgb);
-    System.out.println();
 
     return rgb != 0;
   }
@@ -170,10 +139,6 @@ public class World {
         continue;
       }
       Shape collisionArea = ship.getCollisionArea();
-//      System.out.println();
-//      System.out.println("ship: " + collisionArea.getX() + ", " + collisionArea.getY() + ", "
-//          + collisionArea.getWidth() + ", " + collisionArea.getHeight());
-//      System.out.println("bullet: " + x1 + ", " + y1 + ", " + x2 + ", " + y2);
       if (collisionArea.contains(line) || line.intersects(collisionArea)) {
         return ship;
       }
