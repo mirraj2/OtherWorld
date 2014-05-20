@@ -3,21 +3,24 @@ package ow.server;
 import java.util.Collection;
 import java.util.Map;
 
+import jexxus.common.Connection;
+import jexxus.common.ConnectionListener;
+import jexxus.common.Delivery;
+import jexxus.server.Server;
+import jexxus.server.ServerConnection;
+
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
+
+import ow.common.Faction;
+import ow.common.ShipType;
+
 import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import jexxus.common.Connection;
-import jexxus.common.ConnectionListener;
-import jexxus.common.Delivery;
-import jexxus.server.Server;
-import jexxus.server.ServerConnection;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
-import ow.common.Faction;
-import ow.common.ShipType;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -53,6 +56,10 @@ public class OWServer implements ConnectionListener {
     o.addProperty("ship", ship.id);
     o.addProperty("damage", damage);
     sendToAll(o);
+  }
+
+  public void onShotsFired(Collection<Shot> shots) {
+    sendToAll(createShotsObject(shots));
   }
 
   public void sendUpdate(Ship ship) {
@@ -150,7 +157,7 @@ public class OWServer implements ConnectionListener {
 
       sendToAllBut(o, from);
     } else if (command.equals("shoot")) {
-      sendToAll(createShotsObject(world.fire(ship)));
+      world.fire(ship);
     }
     else {
       logger.debug("Unknown message: " + o);

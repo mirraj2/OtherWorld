@@ -5,17 +5,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
+import org.apache.log4j.Logger;
+import org.newdawn.slick.Color;
+import org.newdawn.slick.Image;
+
+import ow.client.ImageLoader;
 import ow.client.arch.SGraphics;
+import ow.client.model.effect.Effect;
+import ow.client.model.effect.ShipExplosion;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.apache.log4j.Logger;
-import org.newdawn.slick.Color;
-import org.newdawn.slick.Image;
-import ow.client.ImageLoader;
-import ow.client.model.effect.Effect;
-import ow.client.model.effect.ShipExplosion;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -148,11 +149,11 @@ public class ClientModel {
     double x = ship.x - image.getWidth() / 2;
     double y = ship.y - image.getHeight() / 2;
 
-    double r = ship.rotation;
+    // double r = ship.rotation;
 
-    g.rotate(-r, ship.x, ship.y);
+    // g.rotate(-r, ship.x, ship.y);
     g.draw(image, x, y);
-    g.rotate(r, ship.x, ship.y);
+    // g.rotate(r, ship.x, ship.y);
 
     y -= 6;
     int barHeight = 4;

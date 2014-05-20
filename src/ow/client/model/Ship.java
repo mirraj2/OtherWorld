@@ -2,6 +2,7 @@ package ow.client.model;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Image;
+
 import ow.client.ImageLoader;
 import ow.common.Faction;
 import ow.common.OMath;
@@ -76,6 +77,7 @@ public class Ship {
     Image image = ImageLoader.getSlickImage("ships/" + type.getImageName());
     Color c = faction.getColor();
     image.setImageColor(c.r, c.g, c.b);
+    image.setRotation(-(float) Math.toDegrees(rotation));
     return image;
   }
 

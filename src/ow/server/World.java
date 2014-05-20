@@ -8,16 +8,18 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+import org.newdawn.slick.geom.Line;
+import org.newdawn.slick.geom.Shape;
+
+import ow.common.Faction;
+import ow.common.ShipType;
+import ow.server.brain.FedSpawner;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
-import org.apache.log4j.Logger;
-import org.newdawn.slick.geom.Line;
-import org.newdawn.slick.geom.Shape;
-import ow.common.Faction;
-import ow.common.ShipType;
-import ow.server.brain.FedSpawner;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -47,7 +49,7 @@ public class World {
     Executors.newSingleThreadExecutor().execute(updater);
   }
   
-  public Collection<Shot> fire(Ship shooter) {
+  public void fire(Ship shooter) {
     List<Shot> ret = Lists.newArrayList();
     for (Point p : shooter.gunLocations) {
       double r = -shooter.rotation;
@@ -58,7 +60,7 @@ public class World {
 
     shots.addAll(ret);
 
-    return ret;
+    server.onShotsFired(ret);
   }
 
   /**
