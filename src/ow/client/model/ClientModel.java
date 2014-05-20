@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
+import ow.client.arch.SGraphics;
+
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -12,8 +14,8 @@ import org.apache.log4j.Logger;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Image;
 import ow.client.ImageLoader;
-import ow.client.SGraphics;
-import ow.common.Faction;
+import ow.client.model.effect.Effect;
+import ow.client.model.effect.ShipExplosion;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -25,6 +27,8 @@ public class ClientModel {
   private SortedMap<Integer, Ship> ships = ImmutableSortedMap.of();
   private final List<Planet> planets = Lists.newCopyOnWriteArrayList();
   private final Map<Integer, Shot> shots = Maps.newConcurrentMap();
+  private final List<Effect> effects = Lists.newCopyOnWriteArrayList();
+  private final List<Runnable> tasksToRun = Lists.newCopyOnWriteArrayList();
 
   private Ship focus = null;
 
@@ -43,6 +47,19 @@ public class ClientModel {
     Map<Integer, Ship> newShipsMap = Maps.newTreeMap(this.ships);
     newShipsMap.remove(shipID);
     this.ships = ImmutableSortedMap.copyOf(newShipsMap);
+  }
+
+  public void explodeShip(int shipID) {
+    final Ship ship = ships.get(shipID);
+    
+    removeShip(shipID);
+    
+    tasksToRun.add(new Runnable() {
+      @Override
+      public void run() {
+        effects.add(new ShipExplosion(ship));
+      }
+    });
   }
 
   public void addPlanet(Planet planet) {
@@ -80,11 +97,23 @@ public class ClientModel {
     for (Integer expiredShot : expiredShots) {
       shots.remove(expiredShot);
     }
+
+    for (Effect effect : effects) {
+      effect.tick(delta);
+      if (effect.isFinished()) {
+        effects.remove(effect);
+      }
+    }
   }
 
   public void render(SGraphics g, int w, int h) {
     if (this.focus == null) {
       return;
+    }
+
+    for (Runnable r : tasksToRun) {
+      r.run();
+      tasksToRun.remove(r);
     }
 
     g.translate(-(focus.x - w / 2), -(focus.y - h / 2));
@@ -93,6 +122,10 @@ public class ClientModel {
       Image im = ImageLoader.getSlickImage("planets/" + planet.name + ".png");
 
       g.draw(im, planet.x - im.getWidth() / 2, planet.y - im.getHeight() / 2);
+    }
+
+    for (Effect effect : effects) {
+      effect.render(g);
     }
 
     for (Ship ship : ships.values()) {
@@ -110,8 +143,7 @@ public class ClientModel {
   }
 
   private void render(SGraphics g, Ship ship) {
-    Image image = ImageLoader.getSlickImage("ships/" + ship.type.getImageName());
-    adjustImage(image, ship.faction);
+    Image image = ship.getImage();
 
     double x = ship.x - image.getWidth() / 2;
     double y = ship.y - image.getHeight() / 2;
@@ -137,11 +169,6 @@ public class ClientModel {
       g.setColor(Color.green);
     }
     g.fillRect(x + 1, y + 1, p * image.getWidth() - 2, barHeight - 2);
-  }
-
-  private void adjustImage(Image image, Faction faction) {
-    Color c = faction.getColor();
-    image.setImageColor(c.r, c.g, c.b);
   }
 
 }

@@ -80,7 +80,7 @@ public class NetworkHandler implements ConnectionListener {
       ship.hp = Math.max(0, ship.hp - damage);
 
       if (ship.hp == 0) {
-        model.removeShip(shipID);
+        model.explodeShip(shipID);
       }
 
       model.removeShot(shotID);

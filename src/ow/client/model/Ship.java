@@ -1,5 +1,8 @@
 package ow.client.model;
 
+import org.newdawn.slick.Color;
+import org.newdawn.slick.Image;
+import ow.client.ImageLoader;
 import ow.common.Faction;
 import ow.common.OMath;
 import ow.common.ShipType;
@@ -67,6 +70,13 @@ public class Ship {
 
     x += dx;
     y += dy;
+  }
+
+  public Image getImage() {
+    Image image = ImageLoader.getSlickImage("ships/" + type.getImageName());
+    Color c = faction.getColor();
+    image.setImageColor(c.r, c.g, c.b);
+    return image;
   }
 
 }

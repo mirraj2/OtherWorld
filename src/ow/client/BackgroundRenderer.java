@@ -3,6 +3,8 @@ package ow.client;
 import java.awt.Rectangle;
 import java.util.Random;
 
+import ow.client.arch.SGraphics;
+
 import com.google.common.base.Throwables;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;

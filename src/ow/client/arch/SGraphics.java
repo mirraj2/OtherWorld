@@ -1,8 +1,10 @@
-package ow.client;
+package ow.client.arch;
 
+import com.google.common.base.Throwables;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
+import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Shape;
 
 public class SGraphics {
@@ -62,6 +64,14 @@ public class SGraphics {
   public SGraphics destroy() {
     g.destroy();
     return this;
+  }
+
+  public static SGraphics create(Image im) {
+    try {
+      return new SGraphics(im.getGraphics());
+    } catch (SlickException e) {
+      throw Throwables.propagate(e);
+    }
   }
 
 }

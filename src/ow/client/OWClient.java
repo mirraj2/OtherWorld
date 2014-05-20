@@ -3,6 +3,8 @@ package ow.client;
 import java.awt.Rectangle;
 import java.io.IOException;
 
+import ow.client.arch.SGraphics;
+
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.gson.JsonObject;
