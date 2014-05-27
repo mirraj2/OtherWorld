@@ -2,7 +2,6 @@ package ow.client.model;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Image;
-
 import ow.client.ImageLoader;
 import ow.common.Faction;
 import ow.common.OMath;
@@ -14,6 +13,7 @@ public class Ship {
   public double x, y;
   public double rotation;
   public boolean moving = false;
+  public double movementDirection = 0;
   public double hp;
 
   public final Faction faction;
@@ -45,6 +45,11 @@ public class Ship {
     return this;
   }
 
+  public Ship movementDirection(double movementDirection) {
+    this.movementDirection = movementDirection;
+    return this;
+  }
+
   public Ship moving(boolean moving) {
     this.moving = moving;
     return this;
@@ -66,8 +71,9 @@ public class Ship {
   }
 
   private void moveForward(int delta) {
-    float dx = (float) (Math.cos(rotation) * delta * maxSpeed / 1000);
-    float dy = -(float) (Math.sin(rotation) * delta * maxSpeed / 1000);
+    double r = rotation + movementDirection;
+    float dx = (float) (Math.cos(r) * delta * maxSpeed / 1000);
+    float dy = -(float) (Math.sin(r) * delta * maxSpeed / 1000);
 
     x += dx;
     y += dy;

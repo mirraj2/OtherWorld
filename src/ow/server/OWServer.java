@@ -3,24 +3,21 @@ package ow.server;
 import java.util.Collection;
 import java.util.Map;
 
-import jexxus.common.Connection;
-import jexxus.common.ConnectionListener;
-import jexxus.common.Delivery;
-import jexxus.server.Server;
-import jexxus.server.ServerConnection;
-
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
-
-import ow.common.Faction;
-import ow.common.ShipType;
-
 import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import jexxus.common.Connection;
+import jexxus.common.ConnectionListener;
+import jexxus.common.Delivery;
+import jexxus.server.Server;
+import jexxus.server.ServerConnection;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
+import ow.common.Faction;
+import ow.common.ShipType;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -87,6 +84,7 @@ public class OWServer implements ConnectionListener {
     o.addProperty("y", ship.y);
     o.addProperty("rotation", ship.rotation);
     o.addProperty("moving", ship.moving);
+    o.addProperty("direction", ship.movementDirection);
     return o;
   }
 
@@ -99,6 +97,7 @@ public class OWServer implements ConnectionListener {
     o.addProperty("x", ship.x);
     o.addProperty("y", ship.y);
     o.addProperty("rotation", ship.rotation);
+    o.addProperty("direction", ship.movementDirection);
     o.addProperty("moving", ship.moving);
     o.addProperty("max_hp", ship.maxHP);
     o.addProperty("hp", ship.hp);

@@ -21,6 +21,7 @@ public class Ship extends Entity {
 
   public boolean moving = false;
   public double rotation = Math.PI / 2;
+  public double movementDirection = 0;
   public double hp;
 
   public Ship(Faction faction, ShipType type, Point location) {
@@ -45,6 +46,8 @@ public class Ship extends Entity {
   }
 
   private void moveForward(double millis) {
+    double r = rotation + movementDirection;
+
     x += (float) (Math.cos(rotation) * millis * maxSpeed / 1000);
     y -= (float) (Math.sin(rotation) * millis * maxSpeed / 1000);
   }

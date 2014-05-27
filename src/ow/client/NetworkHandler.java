@@ -42,10 +42,13 @@ public class NetworkHandler implements ConnectionListener {
       double rotation = o.get("rotation").getAsDouble();
       double maxHP = o.get("max_hp").getAsDouble();
       double hp = o.get("hp").getAsDouble();
+      boolean moving = o.get("moving").getAsBoolean();
+      double movementDirection = o.get("direction").getAsDouble();
 
       Ship ship = new Ship(id, Faction.valueOf(o.get("faction").getAsString()),
           ShipType.valueOf(o.get("type").getAsString()), hp, maxHP)
-          .setLocation(x, y).setRotation(rotation).halt();
+              .setLocation(x, y).setRotation(rotation).moving(moving)
+              .movementDirection(movementDirection);
       model.addShip(ship);
 
     } else if (command.equals("planet")) {
@@ -67,6 +70,7 @@ public class NetworkHandler implements ConnectionListener {
       }
     } else if (command.equals("take_control")) {
       int id = o.get("id").getAsInt();
+      System.out.println("TAKE CONTROL: " + id);
 
       Ship ship = model.getShip(id);
       client.setMyShip(ship);

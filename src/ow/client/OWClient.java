@@ -2,16 +2,17 @@ package ow.client;
 
 import java.awt.Rectangle;
 import java.io.IOException;
-
-import ow.client.arch.SGraphics;
+import java.util.Map;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 import jexxus.client.ClientConnection;
 import jexxus.common.Delivery;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.newdawn.slick.AppGameContainer;
@@ -21,6 +22,7 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
+import ow.client.arch.SGraphics;
 import ow.client.model.ClientModel;
 import ow.client.model.Ship;
 
@@ -88,51 +90,66 @@ public class OWClient extends BasicGame {
 
     mouseX = x;
     mouseY = y;
-    orderShipToClick();
+
+    JsonObject o = new JsonObject();
+    o.addProperty("command", "shoot");
+    sendToServer(o);
   }
 
   @Override
   public void mouseDragged(int oldX, int oldY, int newX, int newY) {
     mouseX = newX;
     mouseY = newY;
-    orderShipToClick();
+
+    pointShipAtMouse();
   }
 
   @Override
   public void mouseMoved(int oldX, int oldY, int newX, int newY) {
     mouseX = newX;
     mouseY = newY;
+
+    pointShipAtMouse();
   }
 
-  @Override
-  public void mouseReleased(int button, int x, int y) {
-    if (button != 0) {
-      return;
-    }
-
-    myShip.halt();
+  private void pointShipAtMouse() {
+    Rectangle r = model.getCameraBounds(container.getWidth(), container.getHeight());
+    myShip.rotateToTarget(r.x + mouseX, r.y + mouseY);
     sendShipUpdate();
   }
 
   @Override
+  public void mouseReleased(int button, int x, int y) {
+  }
+
+  private final Map<Integer, Double> movementDirections = ImmutableMap.of(Input.KEY_W, 0d,
+      Input.KEY_S, Math.PI, Input.KEY_A, Math.PI / 2, Input.KEY_D, -Math.PI / 2);
+
+  @Override
   public void keyPressed(int key, char c) {
-    if (key == Input.KEY_SPACE) {
-      JsonObject o = new JsonObject();
-      o.addProperty("command", "shoot");
-      sendToServer(o);
+    Double d = movementDirections.get(key);
+    if (d != null) {
+      myShip.moving = true;
+      myShip.movementDirection = d;
+      sendShipUpdate();
     } else if (key == Input.KEY_ESCAPE) {
       container.exit();
       System.exit(0);
     }
   }
 
-  private void orderShipToClick() {
-    Rectangle r = model.getCameraBounds(container.getWidth(), container.getHeight());
-
-    myShip.rotateToTarget(r.x + mouseX, r.y + mouseY);
-    myShip.moving = true;
-
-    sendShipUpdate();
+  @Override
+  public void keyReleased(int key, char c) {
+    if (movementDirections.containsKey(key)) {
+      for (Integer i : movementDirections.keySet()) {
+        if (Keyboard.isKeyDown(i)) {
+          return;
+        }
+      }
+      myShip.moving = false;
+      myShip.movementDirection = 0;
+      sendShipUpdate();
+    }
   }
 
   private void sendShipUpdate() {
@@ -143,6 +160,7 @@ public class OWClient extends BasicGame {
     o.addProperty("y", myShip.y);
     o.addProperty("rotation", myShip.rotation);
     o.addProperty("moving", myShip.moving);
+    o.addProperty("direction", myShip.movementDirection);
     sendToServer(o);
   }
 
