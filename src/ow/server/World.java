@@ -8,18 +8,15 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
-import org.newdawn.slick.geom.Line;
-import org.newdawn.slick.geom.Shape;
-
-import ow.common.Faction;
-import ow.common.ShipType;
-import ow.server.brain.FedSpawner;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
+import org.apache.log4j.Logger;
+import org.newdawn.slick.geom.Line;
+import org.newdawn.slick.geom.Shape;
+import ow.common.Faction;
+import ow.common.ShipType;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -39,12 +36,12 @@ public class World {
 
     planets.add(new Planet("Mars", 1000, 1000));
 
-    Ship fedStation = new Ship(Faction.FEDERATION, ShipType.STATION, new Point(600, 1000));
+    // Ship fedStation = new Ship(Faction.FEDERATION, ShipType.STATION, new Point(600, 1000));
 
     add(new Ship(Faction.EXPLORERS, ShipType.STATION, new Point(1400, 1000)).rotation(Math.PI / 6));
-    add(fedStation);
+    // add(fedStation);
     
-    ais.add(new FedSpawner(this, fedStation));
+    // ais.add(new FedSpawner(this, fedStation));
 
     Executors.newSingleThreadExecutor().execute(updater);
   }

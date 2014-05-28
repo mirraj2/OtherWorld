@@ -180,11 +180,12 @@ public class OWClient extends BasicGame {
     DisplayMode mode = Display.getDesktopDisplayMode();
 
     container.setAlwaysRender(true);
+    container.setTargetFrameRate(60);
 
     if (FULLSCREEN) {
       container.setDisplayMode(mode.getWidth(), mode.getHeight(), true);
     } else {
-      container.setDisplayMode(2 * mode.getWidth() / 3, 2 * mode.getHeight() / 3, false);
+      container.setDisplayMode(3 * mode.getWidth() / 4, 3 * mode.getHeight() / 4, false);
     }
 
     container.start();
