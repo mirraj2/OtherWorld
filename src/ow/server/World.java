@@ -12,18 +12,20 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+import org.newdawn.slick.geom.Line;
+import org.newdawn.slick.geom.Shape;
+
+import ow.common.Faction;
+import ow.common.ShipType;
+import ow.server.brain.FedSpawner;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
-import org.apache.log4j.Logger;
-import org.newdawn.slick.geom.Line;
-import org.newdawn.slick.geom.Shape;
-import ow.common.Faction;
-import ow.common.ShipType;
-import ow.server.brain.FedSpawner;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.getFirst;
@@ -33,7 +35,7 @@ public class World {
   @SuppressWarnings("unused")
   private static final Logger logger = Logger.getLogger(World.class);
 
-  private static final double MIN_DIST_BETWEEN_PLANETS = 1000;
+  private static final double MIN_DIST_BETWEEN_PLANETS = 2000;
 
   private static final Random rand = new Random();
 
@@ -66,7 +68,7 @@ public class World {
   }
 
   private void generatePlanets() {
-    int mapSize = 20000;
+    int mapSize = 40000;
 
     outer: for (int i = 0; i < 100; i++) {
       int x = rand.nextInt(mapSize);
