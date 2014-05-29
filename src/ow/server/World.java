@@ -66,9 +66,9 @@ public class World {
   }
 
   private void generatePlanets() {
-    int mapSize = 50000;
+    int mapSize = 20000;
 
-    outer: for (int i = 0; i < 1000; i++) {
+    outer: for (int i = 0; i < 100; i++) {
       int x = rand.nextInt(mapSize);
       int y = rand.nextInt(mapSize);
 

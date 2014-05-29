@@ -128,7 +128,7 @@ public class ClientModel {
 
     g.zoom(zoom);
     g.translate(focus.x - (w / zoom) / 2, focus.y - (h / zoom) / 2);
-    g.clip(w, h);
+    g.clip(w / zoom, h / zoom);
 
     drawConnections(g);
 
