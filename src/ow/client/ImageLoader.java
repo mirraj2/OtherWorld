@@ -35,7 +35,7 @@ public class ImageLoader {
     if (ret == null) {
       InputStream in = ImageLoader.class.getResourceAsStream("rez/" + s);
       try {
-        ret = new Image(in, s, true);
+        ret = new Image(in, s, false);
         cache2.put(s, ret);
       } catch (SlickException e) {
         throw Throwables.propagate(e);

@@ -1,5 +1,8 @@
 package ow.server.brain;
 
+import java.util.List;
+
+import com.google.common.collect.Lists;
 import ow.common.Faction;
 import ow.common.ShipType;
 import ow.server.AI;
@@ -11,6 +14,7 @@ public class FedSpawner extends AI {
   private double timeSinceLastSpawnAttempt = 0;
 
   private final Ship station;
+  private final List<Ship> shipsSpawned = Lists.newArrayList();
 
   public FedSpawner(World world, Ship station) {
     super(world);
@@ -32,14 +36,9 @@ public class FedSpawner extends AI {
   }
 
   private void spawnNewShips() {
-    int numEnemyShips = 0;
-    for (Ship ship : world.getShips()) {
-      if (ship.faction == Faction.FEDERATION) {
-        numEnemyShips++;
-      }
-    }
+    // TODO clear out the shipsSpawned list
 
-    if (numEnemyShips > 10) {
+    if (shipsSpawned.size() > 10) {
       return;
     }
 
@@ -53,6 +52,7 @@ public class FedSpawner extends AI {
     double x = station.x;
     double y = station.y;
     Ship ship = new Ship(Faction.FEDERATION, ShipType.SPECTRE, x, y).rotation(r);
+    shipsSpawned.add(ship);
     world.add(ship);
     world.addAI(new ProtectAI(world, ship, station));
   }

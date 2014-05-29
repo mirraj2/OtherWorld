@@ -113,6 +113,10 @@ public class OWClient extends BasicGame {
   }
 
   private void pointShipAtMouse() {
+    if (myShip == null) {
+      return;
+    }
+
     Rectangle r = model.getCameraBounds(container.getWidth(), container.getHeight());
     myShip.rotateToTarget(r.x + mouseX, r.y + mouseY);
     sendShipUpdate();
@@ -152,6 +156,15 @@ public class OWClient extends BasicGame {
     }
   }
 
+  @Override
+  public void mouseWheelMoved(int change) {
+    if (change < 0) {
+      model.zoomOut();
+    } else {
+      model.zoomIn();
+    }
+  }
+
   private void sendShipUpdate() {
     JsonObject o = new JsonObject();
     o.addProperty("command", "update");
@@ -180,7 +193,7 @@ public class OWClient extends BasicGame {
     DisplayMode mode = Display.getDesktopDisplayMode();
 
     container.setAlwaysRender(true);
-    container.setTargetFrameRate(60);
+    // container.setTargetFrameRate(60);
 
     if (FULLSCREEN) {
       container.setDisplayMode(mode.getWidth(), mode.getHeight(), true);

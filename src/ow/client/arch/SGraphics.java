@@ -1,5 +1,7 @@
 package ow.client.arch;
 
+import java.awt.Rectangle;
+
 import com.google.common.base.Throwables;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
@@ -11,8 +13,11 @@ public class SGraphics {
 
   private final Graphics g;
 
+  private Rectangle clip = new Rectangle(0, 0, 0, 0);
+
   public SGraphics(Graphics g) {
     this.g = g;
+    g.setAntiAlias(true);
   }
 
   public SGraphics setColor(Color c) {
@@ -26,6 +31,9 @@ public class SGraphics {
   }
 
   public SGraphics fillRect(double x, double y, double w, double h) {
+    if (clipMiss(x, y, w, h)) {
+      return this;
+    }
     g.fillRect((float) x, (float) y, (float) w, (float) h);
     return this;
   }
@@ -37,7 +45,9 @@ public class SGraphics {
   }
 
   public SGraphics translate(double x, double y) {
-    g.translate((float) x, (float) y);
+    g.translate((float) -x, (float) -y);
+    this.clip.x += x;
+    this.clip.y += y;
     return this;
   }
 
@@ -47,7 +57,34 @@ public class SGraphics {
   }
 
   public SGraphics draw(Image image, double x, double y) {
+    if (clipMiss(x, y, image.getWidth(), image.getHeight())) {
+      return this;
+    }
+
     g.drawImage(image, (float) x, (float) y);
+    return this;
+  }
+
+  public SGraphics line(double lineWidth, double x, double y, double xx, double yy) {
+    if (clipMiss(Math.min(x, xx), Math.min(y, yy), Math.abs(x - xx), Math.abs(y - yy))) {
+      return this;
+    }
+
+    float oldWidth = g.getLineWidth();
+    g.setLineWidth((float) lineWidth);
+    g.drawLine((float) x, (float) y, (float) xx, (float) yy);
+    g.setLineWidth(oldWidth);
+    return this;
+  }
+
+  public SGraphics zoom(double zoom) {
+    g.scale((float) zoom, (float) zoom);
+    return this;
+  }
+
+  public SGraphics clip(double w, double h) {
+    this.clip.width = (int) w;
+    this.clip.height = (int) h;
     return this;
   }
 
@@ -58,7 +95,24 @@ public class SGraphics {
 
   public SGraphics pop() {
     g.popTransform();
+    clip.x = 0;
+    clip.y = 0;
+    clip.width = 0;
+    clip.height = 0;
     return this;
+  }
+
+  public boolean clipMiss(double x, double y, double w, double h) {
+    if (clip.width == 0) {
+      return false;
+    }
+    if (x > clip.getMaxX() || y > clip.getMaxY()) {
+      return true;
+    }
+    if (x + w < clip.x || y + h < clip.y) {
+      return true;
+    }
+    return false;
   }
 
   public SGraphics destroy() {

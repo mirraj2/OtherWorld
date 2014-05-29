@@ -1,51 +1,214 @@
 package ow.server;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.log4j.Logger;
 import org.newdawn.slick.geom.Line;
 import org.newdawn.slick.geom.Shape;
 import ow.common.Faction;
 import ow.common.ShipType;
+import ow.server.brain.FedSpawner;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Iterables.getFirst;
 
 public class World {
 
   @SuppressWarnings("unused")
   private static final Logger logger = Logger.getLogger(World.class);
 
+  private static final double MIN_DIST_BETWEEN_PLANETS = 1000;
+
+  private static final Random rand = new Random();
+
   private final OWServer server;
   private Map<Integer, Ship> ships = Maps.newConcurrentMap();
-  private List<Planet> planets = Lists.newArrayList();
   private List<Shot> shots = Lists.newCopyOnWriteArrayList();
   private List<AI> ais = Lists.newCopyOnWriteArrayList();
+  private RTree<Planet> planets = new RTree<>();
+
+  private Planet startingPlanet;
 
   public World(OWServer server) {
     this.server = server;
 
-    planets.add(new Planet("Mars", 1000, 1000));
-
-    // Ship fedStation = new Ship(Faction.FEDERATION, ShipType.STATION, new Point(600, 1000));
-
-    add(new Ship(Faction.EXPLORERS, ShipType.STATION, new Point(1400, 1000)).rotation(Math.PI / 6));
-    // add(fedStation);
+    generatePlanets();
     
-    // ais.add(new FedSpawner(this, fedStation));
+    add(new Ship(Faction.EXPLORERS, ShipType.STATION, startingPlanet.x + 300,
+        startingPlanet.y + 200));
+
+    for (Planet planet : planets) {
+      if (planet != startingPlanet) {
+        Ship fedStation = new Ship(Faction.FEDERATION, ShipType.STATION, planet.x + 300,
+            planet.y - 100);
+        add(fedStation);
+        addAI(new FedSpawner(this, fedStation));
+      }
+    }
 
     Executors.newSingleThreadExecutor().execute(updater);
   }
+
+  private void generatePlanets() {
+    int mapSize = 50000;
+
+    outer: for (int i = 0; i < 1000; i++) {
+      int x = rand.nextInt(mapSize);
+      int y = rand.nextInt(mapSize);
+
+      if (planets.find(x, y, MIN_DIST_BETWEEN_PLANETS) != null) {
+        i--;
+        continue outer;
+      }
+
+      planets.add(generatePlanetAt(x, y), x, y);
+    }
+
+    startingPlanet = getFirst(planets, null);
+
+    for (Planet p : planets) {
+      generateConnections(p);
+    }
+
+    joinGraph();
+  }
+
+  /**
+   * Make sure there are no isolated subsectors
+   */
+  private void joinGraph() {
+    List<Set<Planet>> subsectors = getSubsectors();
+
+    while (subsectors.size() > 1) {
+      Set<Planet> sectorA = subsectors.get(0);
+      Planet p2 = getClosestOutOfSector(sectorA, null, planets);
+      
+      Set<Planet> sectorB = getSector(p2, subsectors);
+      Planet p1 = getClosestOutOfSector(sectorB, p2, sectorA);
+      
+      p1.connectTo(p2);
+
+      sectorB.addAll(sectorA);
+      subsectors.remove(0);
+    }
+  }
   
+  private Set<Planet> getSector(Planet p, List<Set<Planet>> subsectors) {
+    for (Set<Planet> s : subsectors) {
+      if (s.contains(p)) {
+        return s;
+      }
+    }
+    throw new IllegalStateException();
+  }
+
+  private Planet getClosestOutOfSector(Set<Planet> sector, Planet p1, Iterable<Planet> searchSpace) {
+    if (p1 == null) {
+      p1 = getFirst(sector, null);
+    }
+
+    Planet closest = null;
+    double d = -1;
+    for (Planet p2 : searchSpace) {
+      if (!sector.contains(p2)) {
+        double dd = p1.distSquared(p2);
+        if (closest == null || dd < d) {
+          closest = p2;
+          d = dd;
+        }
+      }
+    }
+    return closest;
+  }
+
+  private List<Set<Planet>> getSubsectors() {
+    Set<Planet> seen = Sets.newHashSet();
+    List<Set<Planet>> ret = Lists.newArrayList();
+
+    for (Planet p : planets) {
+      if (seen.contains(p)) {
+        continue;
+      }
+
+      Set<Planet> currentSubsector = Sets.newHashSet();
+      walkSubsector(p, currentSubsector);
+      ret.add(currentSubsector);
+      seen.addAll(currentSubsector);
+    }
+
+    return ret;
+  }
+
+  private void walkSubsector(Planet p, Set<Planet> subsector) {
+    if (!subsector.add(p)) {
+      return;
+    }
+    for (Planet p2 : p.connections) {
+      walkSubsector(p2, subsector);
+    }
+  }
+
+  private void generateConnections(final Planet p) {
+    int numConnections = 1;
+    while (true) {
+      double r = rand.nextDouble();
+      if (r < 1 / (numConnections + .5)) {
+        numConnections++;
+      } else {
+        break;
+      }
+    }
+
+    List<Planet> targets = Ordering.from(new Comparator<Planet>() {
+      @Override
+      public int compare(Planet a, Planet b) {
+        double distA = p.distSquared(a);
+        double distB = p.distSquared(b);
+        return (int) Math.signum(distA - distB);
+      }
+    }).leastOf(planets, numConnections + 1);
+
+    for (Planet to : targets) {
+      p.connectTo(to);
+    }
+  }
+
+  private Planet generatePlanetAt(int x, int y) {
+    return new Planet(random(Planet.types), randomColor(), x, y);
+  }
+
+  private int randomColor() {
+    while (true) {
+      int r = rand.nextInt(255);
+      int g = rand.nextInt(255);
+      int b = rand.nextInt(255);
+
+      if (r + g + b >= 40) {
+        return new Color(r, g, b).getRGB();
+      }
+    }
+  }
+
+  private <T> T random(List<T> c) {
+    return c.get(rand.nextInt(c.size()));
+  }
+
   public void fire(Ship shooter) {
     List<Shot> ret = Lists.newArrayList();
     for (Point p : shooter.gunLocations) {
@@ -144,6 +307,9 @@ public class World {
       if (ship.faction == shooterFaction) {
         continue;
       }
+      if (ship.distSquared(x2, y2) > 1000 * 1000) {
+        continue;
+      }
       Shape collisionArea = ship.getCollisionArea();
       if (collisionArea.contains(line) || line.intersects(collisionArea)) {
         return ship;
@@ -178,10 +344,10 @@ public class World {
   }
 
   public Point getPlayerSpawnLocation() {
-    return new Point(1400, 900);
+    return new Point((int) startingPlanet.x + 300, (int) startingPlanet.y + 100);
   }
 
-  public List<Planet> getPlanets() {
+  public Iterable<Planet> getPlanets() {
     return planets;
   }
 

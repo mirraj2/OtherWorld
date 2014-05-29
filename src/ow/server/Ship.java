@@ -48,8 +48,8 @@ public class Ship extends Entity {
   private void moveForward(double millis) {
     double r = rotation + movementDirection;
 
-    x += (float) (Math.cos(rotation) * millis * maxSpeed / 1000);
-    y -= (float) (Math.sin(rotation) * millis * maxSpeed / 1000);
+    x += (float) (Math.cos(r) * millis * maxSpeed / 1000);
+    y -= (float) (Math.sin(r) * millis * maxSpeed / 1000);
   }
 
   public Ship rotation(double rotation) {

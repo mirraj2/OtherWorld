@@ -9,6 +9,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import jexxus.common.Connection;
 import jexxus.common.ConnectionListener;
 import jexxus.common.Delivery;
@@ -106,10 +107,19 @@ public class OWServer implements ConnectionListener {
 
   private JsonObject createPlanetObject(Planet planet) {
     JsonObject o = new JsonObject();
+    o.addProperty("id", planet.id);
     o.addProperty("command", "planet");
     o.addProperty("name", planet.name);
     o.addProperty("x", planet.x);
     o.addProperty("y", planet.y);
+    o.addProperty("color", planet.color);
+
+    JsonArray connections = new JsonArray();
+    for (Planet p : planet.connections) {
+      connections.add(new JsonPrimitive(p.id));
+    }
+    o.add("connections", connections);
+
     return o;
   }
 
@@ -183,7 +193,11 @@ public class OWServer implements ConnectionListener {
   }
 
   private void send(String s, Connection conn) {
-    conn.send(s.getBytes(Charsets.UTF_8), Delivery.RELIABLE);
+    try {
+      conn.send(s.getBytes(Charsets.UTF_8), Delivery.RELIABLE);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   public static void main(String[] args) {

@@ -42,7 +42,7 @@ public class ProtectAI extends AI {
     timeUntilNextPatrol -= millis;
     if (timeUntilNextPatrol <= 0) {
       timeUntilNextPatrol = PATROL_CYCLE;
-      world.fire(ship);
+      // world.fire(ship);
       patrol();
     }
 

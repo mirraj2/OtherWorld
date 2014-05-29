@@ -52,8 +52,9 @@ public class NetworkHandler implements ConnectionListener {
       model.addShip(ship);
 
     } else if (command.equals("planet")) {
-      model.addPlanet(new Planet(o.get("name").getAsString(), o.get("x").getAsDouble(), o.get("y")
-          .getAsDouble()));
+      model.addPlanet(new Planet(o.get("id").getAsInt(), o.get("name").getAsString(), o
+          .get("color").getAsInt(), o.get("x").getAsDouble(), o.get("y").getAsDouble(),
+          o.get("connections").getAsJsonArray()));
     } else if (command.equals("update")) {
       int id = o.get("id").getAsInt();
       Ship ship = model.getShip(id);

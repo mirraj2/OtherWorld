@@ -20,6 +20,8 @@ public class Ship {
   public final ShipType type;
   public final double maxSpeed, maxHP;
 
+  private Image image;
+
   public Ship(int id, Faction faction, ShipType type, double hp, double maxHP) {
     this.id = id;
     this.faction = faction;
@@ -80,7 +82,9 @@ public class Ship {
   }
 
   public Image getImage() {
-    Image image = ImageLoader.getSlickImage("ships/" + type.getImageName());
+    if (image == null) {
+      image = ImageLoader.getSlickImage("ships/" + type.getImageName());
+    }
     Color c = faction.getColor();
     image.setImageColor(c.r, c.g, c.b);
     image.setRotation(-(float) Math.toDegrees(rotation));
