@@ -1,4 +1,4 @@
-package ow.server;
+package ow.server.model;
 
 import java.util.Random;
 
@@ -33,16 +33,16 @@ public class WorldGenerator {
 
     Faction faction;
 
-    if (d < .2) {
+    if (d < .5) {
       faction = Faction.EXPLORERS;
-      if (d < .1) {
+      if (d < .25) {
         generateBase(planet, faction);
       } else {
         generateUnits(planet, faction);
       }
-    } else if (d < .99) {
+    } else if (d < 1.0) {
       faction = Faction.FEDERATION;
-      if (d < .6) {
+      if (d < .75) {
         generateBase(planet, faction);
       } else {
         generateUnits(planet, faction);

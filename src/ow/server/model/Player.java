@@ -1,5 +1,6 @@
-package ow.server;
+package ow.server.model;
 
+import ow.server.sync.SyncInfo;
 import jexxus.common.Connection;
 
 public class Player {

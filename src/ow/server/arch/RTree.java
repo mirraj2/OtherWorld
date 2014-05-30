@@ -1,11 +1,12 @@
-package ow.server;
+package ow.server.arch;
 
 import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import ow.server.RTree.Locatable;
+
+import ow.server.arch.RTree.Locatable;
 
 public class RTree<T extends Locatable> implements Iterable<T> {
 

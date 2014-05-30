@@ -21,6 +21,10 @@ public class Task {
     return false;
   }
 
+  public void reset() {
+    lastTime = 0;
+  }
+
   public static Task every(int n, TimeUnit unit) {
     return new Task(n, unit);
   }

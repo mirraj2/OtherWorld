@@ -1,8 +1,8 @@
-package ow.server;
+package ow.server.model;
 
 import java.awt.Point;
 
-import ow.server.RTree.Locatable;
+import ow.server.arch.RTree.Locatable;
 
 public class Entity implements Locatable {
 

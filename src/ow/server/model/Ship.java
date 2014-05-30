@@ -1,4 +1,4 @@
-package ow.server;
+package ow.server.model;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;

@@ -1,4 +1,4 @@
-package ow.server;
+package ow.server.model;
 
 import ow.common.OMath;
 

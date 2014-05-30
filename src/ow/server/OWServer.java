@@ -14,6 +14,12 @@ import org.apache.log4j.Logger;
 
 import ow.common.Faction;
 import ow.common.ShipType;
+import ow.server.model.Planet;
+import ow.server.model.Player;
+import ow.server.model.Ship;
+import ow.server.model.Shot;
+import ow.server.model.World;
+import ow.server.sync.GameSync;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
@@ -31,6 +37,7 @@ public class OWServer implements ConnectionListener {
 
   private static final Logger logger = Logger.getLogger(OWServer.class);
 
+  private static final ShipType STARTING_SHIP = ShipType.CHEATSHIP;
   private static final int PORT = 19883;
   private static final JsonParser parser = new JsonParser();
 
@@ -53,12 +60,7 @@ public class OWServer implements ConnectionListener {
       }
     }
 
-    JsonObject o = new JsonObject();
-    o.addProperty("command", "hit");
-    o.addProperty("shot", shot.id);
-    o.addProperty("ship", ship.id);
-    o.addProperty("damage", damage);
-    sendToAll(o);
+    sync.onHit(shot, ship, damage);
   }
 
   public void onShotsFired(Collection<Shot> shots) {
@@ -155,7 +157,7 @@ public class OWServer implements ConnectionListener {
   }
 
   private void spawn(Player p) {
-    Ship ship = new Ship(Faction.EXPLORERS, ShipType.MINI, world.getPlayerSpawnLocation());
+    Ship ship = new Ship(Faction.EXPLORERS, STARTING_SHIP, world.getPlayerSpawnLocation());
     p.setShip(ship);
     world.add(ship);
 

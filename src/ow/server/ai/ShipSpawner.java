@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import ow.common.ShipType;
-import ow.server.Ship;
-import ow.server.World;
+import ow.server.model.Ship;
+import ow.server.model.World;
 
 import com.google.common.collect.Lists;
 

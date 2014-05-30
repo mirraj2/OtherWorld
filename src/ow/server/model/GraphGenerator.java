@@ -1,10 +1,12 @@
-package ow.server;
+package ow.server.model;
 
 import java.awt.Color;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
+import ow.server.arch.RTree;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
@@ -14,14 +16,14 @@ import static com.google.common.collect.Iterables.getFirst;
 
 public class GraphGenerator {
 
-  private static final double MIN_DIST_BETWEEN_PLANETS = 2000;
+  private static final double MIN_DIST_BETWEEN_PLANETS = 1600;
 
   private static final Random rand = new Random();
 
   private RTree<Planet> planets = new RTree<>();
 
   public RTree<Planet> generatePlanets() {
-    int mapSize = 40000;
+    int mapSize = 20000;
 
     outer: for (int i = 0; i < 100; i++) {
       int x = rand.nextInt(mapSize);

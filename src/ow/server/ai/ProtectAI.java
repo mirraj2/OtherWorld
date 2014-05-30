@@ -3,13 +3,13 @@ package ow.server.ai;
 import java.util.concurrent.TimeUnit;
 
 import ow.common.OMath;
-import ow.server.Entity;
-import ow.server.Ship;
-import ow.server.World;
+import ow.server.model.Entity;
+import ow.server.model.Ship;
+import ow.server.model.World;
 
 public class ProtectAI extends ShipAI {
 
-  private static final double PATROL_DISTANCE = 300;
+  private static final double PATROL_DISTANCE = 400;
 
   private final Entity toProtect;
   private final Task findTargetToDestroy = Task.every(1, TimeUnit.SECONDS);
@@ -39,9 +39,10 @@ public class ProtectAI extends ShipAI {
 
     if (target != null && target.isDead()) {
       target = null;
+      findTargetToDestroy.reset();
     }
 
-    if (target == null && findTargetToDestroy.isReady()) {
+    if (findTargetToDestroy.isReady()) {
       target = getClosestEnemy(1000);
       if (target != null) {
         hasPatrolTarget = false;
@@ -51,7 +52,7 @@ public class ProtectAI extends ShipAI {
     if (target == null) {
       patrol(millis);
     } else {
-      if (ship.distSquared(toProtect) > PATROL_DISTANCE * 3 * PATROL_DISTANCE * 3) {
+      if (ship.distSquared(toProtect) > PATROL_DISTANCE * 4 * PATROL_DISTANCE * 4) {
         // stop pursuing if we get too far away from what we are protecting
         returnToProtect();
       } else {
@@ -113,7 +114,7 @@ public class ProtectAI extends ShipAI {
 
     ship.moving(distanceToTarget > moveToDistance && rLeft < Math.PI / 6);
 
-    if (distanceToTarget < shootDistance) {
+    if (distanceToTarget < shootDistance && rLeft < Math.PI / 12) {
       if (fire.isReady()) {
         world.fire(ship);
       }

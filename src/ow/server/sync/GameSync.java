@@ -1,8 +1,14 @@
-package ow.server;
+package ow.server.sync;
 
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import ow.server.OWServer;
+import ow.server.arch.SwapSet;
+import ow.server.model.Player;
+import ow.server.model.Ship;
+import ow.server.model.Shot;
 
 import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
@@ -14,8 +20,9 @@ import com.google.gson.JsonObject;
 public class GameSync {
 
   private final OWServer server;
-  private Set<Ship> dirty = Sets.newHashSet();
-  private Set<Ship> buffer = Sets.newHashSet();
+
+  private SwapSet<Ship> dirty = SwapSet.create();
+  private SwapSet<ShotHit> shotsHit = SwapSet.create();
 
   public GameSync(OWServer server) {
     this.server = server;
@@ -26,17 +33,17 @@ public class GameSync {
 
   public void remove(Ship ship) {}
 
-  private void sendUpdates(Set<Ship> updated) {
+  private void sendUpdates(Set<Ship> updated, Set<ShotHit> shotsHit) {
     for (Player player : server.getPlayers()) {
       try {
-        sendUpdates(updated, player);
+        sendUpdates(updated, player, shotsHit);
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
   }
 
-  private void sendUpdates(Set<Ship> updated, Player player) {
+  private void sendUpdates(Set<Ship> updated, Player player, Set<ShotHit> shotsHit) {
     SyncInfo info = player.getSyncInfo();
 
     Ship playersShip = player.getShip();
@@ -47,7 +54,7 @@ public class GameSync {
       }
     }
 
-    Set<Ship> nearby = server.getWorld().getNearbyShips(playersShip, 2000);
+    Set<Ship> nearby = Sets.newHashSet(server.getWorld().getNearbyShips(playersShip, 2000));
     nearby.add(playersShip);
     
     Set<Ship> brandNewShips = Sets.difference(nearby, info.shipsSeen);
@@ -58,6 +65,11 @@ public class GameSync {
     int numNew = 0, numOut = 0, numUpdate = 0;
     
     JsonArray a = new JsonArray();
+    // todo only send the shots that are near this player
+    for (ShotHit shotHit : shotsHit) {
+      a.add(createShotHitObject(shotHit));
+    }
+
     for (Ship ship : brandNewShips) {
       a.add(createShipObject(ship));
       numNew++;
@@ -91,18 +103,26 @@ public class GameSync {
         return;
       }
 
-      Set<Ship> temp = buffer;
-      buffer = dirty;
-      dirty = temp;
-
-      sendUpdates(buffer);
-
-      buffer.clear();
+      sendUpdates(dirty.get(), shotsHit.get());
     }
   };
 
   public void markUpdated(Ship ship) {
       dirty.add(ship);
+  }
+
+  public void onHit(Shot shot, Ship ship, double damage) {
+    // dirty.add(ship);
+    shotsHit.add(new ShotHit(shot, ship, damage));
+  }
+
+  private JsonObject createShotHitObject(ShotHit shotHit) {
+    JsonObject o = new JsonObject();
+    o.addProperty("command", "hit");
+    o.addProperty("shot", shotHit.shot.id);
+    o.addProperty("ship", shotHit.hit.id);
+    o.addProperty("damage", shotHit.damage);
+    return o;
   }
 
   private JsonObject createShipUpdate(Ship ship) {
@@ -114,6 +134,7 @@ public class GameSync {
     o.addProperty("rotation", ship.rotation);
     o.addProperty("moving", ship.moving);
     o.addProperty("direction", ship.movementDirection);
+    o.addProperty("hp", ship.hp);
     return o;
   }
 

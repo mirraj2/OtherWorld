@@ -10,7 +10,7 @@ import com.google.common.collect.Multimap;
 
 public enum ShipType {
 
-  MINI, SPECTRE, STATION;
+  MINI, SPECTRE, STATION, CHEATSHIP;
 
   public double getMaxSpeed() {
     return maxSpeeds.get(this);
@@ -45,6 +45,7 @@ public enum ShipType {
           .put(MINI, 200d)
           .put(SPECTRE, 150d)
           .put(STATION, 1d)
+          .put(CHEATSHIP, 2000d)
           .build();
 
   // in rotations per minute
@@ -53,6 +54,7 @@ public enum ShipType {
           .put(MINI, 30d)
           .put(SPECTRE, 30d)
           .put(STATION, 30d)
+          .put(CHEATSHIP, 100d)
           .build();
 
   private static final Multimap<ShipType, Point> gunLocations =
@@ -60,6 +62,7 @@ public enum ShipType {
           .put(MINI, new Point(11, 0))
           .put(SPECTRE, new Point(22, -13))
           .put(SPECTRE, new Point(22, 13))
+          .put(CHEATSHIP, new Point(65, 0))
           .build();
 
   private static final Map<ShipType, Double> hitpoints =
@@ -67,6 +70,7 @@ public enum ShipType {
           .put(MINI, 25d)
           .put(SPECTRE, 40d)
           .put(STATION, 500d)
+          .put(CHEATSHIP, 500d)
           .build();
 
 }

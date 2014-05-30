@@ -79,6 +79,7 @@ public class NetworkHandler implements ConnectionListener {
       }
       ship.x = o.get("x").getAsDouble();
       ship.y = o.get("y").getAsDouble();
+      ship.hp = o.get("hp").getAsDouble();
       ship.rotation = o.get("rotation").getAsDouble();
       ship.moving = o.get("moving").getAsBoolean();
       ship.active = true;
@@ -90,21 +91,21 @@ public class NetworkHandler implements ConnectionListener {
             .get("max_distance").getAsDouble()));
       }
     } else if (command.equals("hit")) {
-      int shotID = o.get("shot").getAsInt();
-      int shipID = o.get("ship").getAsInt();
+      int shot = o.get("shot").getAsInt();
+      int ship = o.get("ship").getAsInt();
       double damage = o.get("damage").getAsDouble();
 
-      Ship ship = model.getShip(shipID);
-      ship.hp = Math.max(0, ship.hp - damage);
-
-      if (ship.hp == 0) {
-        model.explodeShip(ship);
-        if (ship == client.getMyShip()) {
-          client.playerDied();
+      model.removeShot(shot);
+      Ship s = model.getShip(ship);
+      if (s != null) {
+        s.hp = Math.max(0, s.hp - damage);
+        if (s.hp == 0) {
+          model.explodeShip(s);
+          if (s == client.getMyShip()) {
+            client.playerDied();
+          }
         }
       }
-
-      model.removeShot(shotID);
     }
     else if (command.equals("offscreen")) {
       int id = o.get("id").getAsInt();

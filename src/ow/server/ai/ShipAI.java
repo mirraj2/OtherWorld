@@ -1,8 +1,9 @@
 package ow.server.ai;
 
 import com.google.common.base.Predicate;
-import ow.server.Ship;
-import ow.server.World;
+
+import ow.server.model.Ship;
+import ow.server.model.World;
 
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.getFirst;

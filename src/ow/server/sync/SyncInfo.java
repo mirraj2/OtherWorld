@@ -1,6 +1,8 @@
-package ow.server;
+package ow.server.sync;
 
 import java.util.Set;
+
+import ow.server.model.Ship;
 
 import com.google.common.collect.Sets;
 

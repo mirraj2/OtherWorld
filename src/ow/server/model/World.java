@@ -1,11 +1,10 @@
-package ow.server;
+package ow.server.model;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -15,13 +14,15 @@ import org.newdawn.slick.geom.Shape;
 
 import ow.common.Faction;
 import ow.common.ShipType;
+import ow.server.OWServer;
 import ow.server.ai.AI;
 import ow.server.ai.ShipSpawner;
+import ow.server.arch.RTree;
+import ow.server.sync.GameSync;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -49,24 +50,30 @@ public class World {
     startingPlanet = getFirst(planets, null);
 
     Ship starterStation = add(new Ship(Faction.EXPLORERS, ShipType.STATION, startingPlanet.x + 300, startingPlanet.y + 200));
-    addAI(new ShipSpawner(this, starterStation, ShipType.MINI, 20, 1.0));
+    addAI(new ShipSpawner(this, starterStation, ShipType.MINI, 20, .5));
 
     new WorldGenerator(this).generate();
 
     Executors.newSingleThreadExecutor().execute(updater);
   }
 
-  public Set<Ship> getNearbyShips(Entity e, int radius) {
+  public Collection<Ship> getNearbyShips(Entity e, int radius) {
     checkNotNull(e);
 
+    Map<Double, Ship> m = Maps.newTreeMap();
+
     radius = radius * radius;
-    Set<Ship> ret = Sets.newHashSet();
     for (Ship ship : ships.values()) {
-      if (e != ship && e.distSquared(ship) <= radius) {
-        ret.add(ship);
+      if (e == ship) {
+        continue;
+      }
+      double d = e.distSquared(ship);
+      if (d <= radius) {
+        m.put(d, ship);
       }
     }
-    return ret;
+
+    return m.values();
   }
 
   public void fire(Ship shooter) {
