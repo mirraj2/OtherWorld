@@ -2,13 +2,11 @@ package ow.client.model.effect;
 
 import java.util.List;
 
+import com.google.common.collect.Lists;
 import org.newdawn.slick.Image;
-
 import ow.client.arch.SGraphics;
 import ow.client.arch.SlickUtils;
 import ow.client.model.Ship;
-
-import com.google.common.collect.Lists;
 
 public class ShipExplosion extends Effect {
 
@@ -24,11 +22,11 @@ public class ShipExplosion extends Effect {
   private void initialize(Ship ship) {
     Image im = SlickUtils.deepCopy(ship.getImage());
 
-    double startX = ship.x - im.getWidth()/2;
-    double startY = ship.y-im.getHeight()/2;
-    
+    double startX = ship.x - im.getWidth() / 2;
+    double startY = ship.y - im.getHeight() / 2;
+
     int pieces = 3;
-    
+
     int xGap = im.getWidth() / pieces;
     int yGap = im.getHeight() / pieces;
     for (int i = 0; i < pieces; i++) {
