@@ -3,6 +3,18 @@ package ow.server;
 import java.util.Collection;
 import java.util.Map;
 
+import jexxus.common.Connection;
+import jexxus.common.ConnectionListener;
+import jexxus.common.Delivery;
+import jexxus.server.Server;
+import jexxus.server.ServerConnection;
+
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
+
+import ow.common.Faction;
+import ow.common.ShipType;
+
 import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
@@ -11,17 +23,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import jexxus.common.Connection;
-import jexxus.common.ConnectionListener;
-import jexxus.common.Delivery;
-import jexxus.server.Server;
-import jexxus.server.ServerConnection;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
-import ow.common.Faction;
-import ow.common.ShipType;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 public class OWServer implements ConnectionListener {
 
@@ -35,13 +39,20 @@ public class OWServer implements ConnectionListener {
   private final World world = new World(this);
 
   private void sendFullUpdate(Player player) {
-    sync.onNewPlayer(player);
     for (Planet planet : world.getPlanets()) {
       send(createPlanetObject(planet), player.getConnection());
     }
   }
 
   public void onHit(Shot shot, Ship ship, double damage) {
+    if (ship.isDead()) {
+      for (Player p : connectionPlayers.values()) {
+        if (p.getShip() == ship) {
+          p.setShip(null);
+        }
+      }
+    }
+
     JsonObject o = new JsonObject();
     o.addProperty("command", "hit");
     o.addProperty("shot", shot.id);
@@ -107,7 +118,9 @@ public class OWServer implements ConnectionListener {
   public void connectionBroken(Connection broken, boolean forced) {
     logger.debug("Lost connection with: " + broken);
     Player player = connectionPlayers.remove(broken);
-    world.remove(player.getShip());
+    if (player.getShip() != null) {
+      world.remove(player.getShip());
+    }
   }
 
   @Override
@@ -115,7 +128,8 @@ public class OWServer implements ConnectionListener {
     JsonObject o = parser.parse(new String(data, Charsets.UTF_8)).getAsJsonObject();
     String command = o.get("command").getAsString();
 
-    Ship ship = connectionPlayers.get(from).getShip();
+    Player player = connectionPlayers.get(from);
+    Ship ship = player.getShip();
 
     if (command.equals("update")) {
       checkArgument(Objects.equal(ship.id, o.get("id").getAsInt()),
@@ -130,26 +144,38 @@ public class OWServer implements ConnectionListener {
       sendToAllBut(o, from);
     } else if (command.equals("shoot")) {
       world.fire(ship);
+    } else if (command.equals("respawn")) {
+      checkState(ship == null, "Cannot respawn when you already have a ship!");
+      
+      spawn(player);
     }
     else {
       logger.debug("Unknown message: " + o);
     }
   }
 
+  private void spawn(Player p) {
+    Ship ship = new Ship(Faction.EXPLORERS, ShipType.MINI, world.getPlayerSpawnLocation());
+    p.setShip(ship);
+    world.add(ship);
+
+    sync.sendShip(p);
+
+    JsonObject o = new JsonObject();
+    o.addProperty("command", "take_control");
+    o.addProperty("id", ship.id);
+    send(o, p.getConnection());
+  }
+
   @Override
   public void clientConnected(ServerConnection conn) {
     logger.debug("Client connected: " + conn);
 
-    Ship clientShip = new Ship(Faction.EXPLORERS, ShipType.MINI, world.getPlayerSpawnLocation());
-    world.add(clientShip);
-    Player player = new Player(conn, clientShip);
+    Player player = new Player(conn);
     connectionPlayers.put(conn, player);
     sendFullUpdate(player);
 
-    JsonObject o = new JsonObject();
-    o.addProperty("command", "take_control");
-    o.addProperty("id", clientShip.id);
-    send(o, conn);
+    spawn(player);
   }
 
   private void send(JsonObject o, Connection conn) {

@@ -28,15 +28,27 @@ public class GameSync {
 
   private void sendUpdates(Set<Ship> updated) {
     for (Player player : server.getPlayers()) {
-      sendUpdates(updated, player);
+      try {
+        sendUpdates(updated, player);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
   }
 
   private void sendUpdates(Set<Ship> updated, Player player) {
     SyncInfo info = player.getSyncInfo();
 
-    Set<Ship> nearby = server.getWorld().getNearbyShips(player.getShip(), 2000);
-    nearby.add(player.getShip());
+    Ship playersShip = player.getShip();
+    if (playersShip == null) {
+      playersShip = player.getLastShip();
+      if (playersShip == null) {
+        return;
+      }
+    }
+
+    Set<Ship> nearby = server.getWorld().getNearbyShips(playersShip, 2000);
+    nearby.add(playersShip);
     
     Set<Ship> brandNewShips = Sets.difference(nearby, info.shipsSeen);
     Set<Ship> outOfRange = Sets.difference(info.shipsNearby, nearby);
@@ -128,7 +140,7 @@ public class GameSync {
     return o;
   }
 
-  public void onNewPlayer(Player player) {
+  public void sendShip(Player player) {
     server.send(createShipObject(player.getShip()).toString(), player.getConnection());
   }
 

@@ -1,20 +1,23 @@
 package ow.client;
 
-import com.google.common.base.Charsets;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import jexxus.common.Connection;
 import jexxus.common.ConnectionListener;
 import jexxus.server.ServerConnection;
+
 import org.apache.log4j.Logger;
+
 import ow.client.model.ClientModel;
 import ow.client.model.Planet;
 import ow.client.model.Ship;
 import ow.client.model.Shot;
 import ow.common.Faction;
 import ow.common.ShipType;
+
+import com.google.common.base.Charsets;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -95,7 +98,10 @@ public class NetworkHandler implements ConnectionListener {
       ship.hp = Math.max(0, ship.hp - damage);
 
       if (ship.hp == 0) {
-        model.explodeShip(shipID);
+        model.explodeShip(ship);
+        if (ship == client.getMyShip()) {
+          client.playerDied();
+        }
       }
 
       model.removeShot(shotID);

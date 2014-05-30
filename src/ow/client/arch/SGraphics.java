@@ -2,12 +2,14 @@ package ow.client.arch;
 
 import java.awt.Rectangle;
 
-import com.google.common.base.Throwables;
 import org.newdawn.slick.Color;
+import org.newdawn.slick.Font;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Shape;
+
+import com.google.common.base.Throwables;
 
 public class SGraphics {
 
@@ -85,6 +87,24 @@ public class SGraphics {
   public SGraphics clip(double w, double h) {
     this.clip.width = (int) w;
     this.clip.height = (int) h;
+    return this;
+  }
+
+  public SGraphics text(String text, double x, double y) {
+    g.drawString(text, (float) x, (float) y);
+    return this;
+  }
+
+  public SGraphics textCentered(String text, int w, int h) {
+    Font font = g.getFont();
+    int sw = font.getWidth(text);
+    int sh = font.getHeight(text);
+
+    return text(text, w / 2 - sw / 2, h / 2 - sh / 2);
+  }
+
+  public SGraphics font(Font font) {
+    g.setFont(font);
     return this;
   }
 

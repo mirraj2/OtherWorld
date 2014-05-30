@@ -9,18 +9,20 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+import org.newdawn.slick.geom.Line;
+import org.newdawn.slick.geom.Shape;
+
+import ow.common.Faction;
+import ow.common.ShipType;
+import ow.server.ai.AI;
+import ow.server.ai.FedSpawner;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
-import org.apache.log4j.Logger;
-import org.newdawn.slick.geom.Line;
-import org.newdawn.slick.geom.Shape;
-import ow.common.Faction;
-import ow.common.ShipType;
-import ow.server.ai.AI;
-import ow.server.ai.FedSpawner;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.getFirst;
@@ -62,6 +64,8 @@ public class World {
   }
 
   public Set<Ship> getNearbyShips(Entity e, int radius) {
+    checkNotNull(e);
+
     radius = radius * radius;
     Set<Ship> ret = Sets.newHashSet();
     for (Ship ship : ships.values()) {

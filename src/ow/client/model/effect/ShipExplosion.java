@@ -2,11 +2,13 @@ package ow.client.model.effect;
 
 import java.util.List;
 
-import com.google.common.collect.Lists;
 import org.newdawn.slick.Image;
+
 import ow.client.arch.SGraphics;
 import ow.client.arch.SlickUtils;
 import ow.client.model.Ship;
+
+import com.google.common.collect.Lists;
 
 public class ShipExplosion extends Effect {
 
@@ -73,8 +75,16 @@ public class ShipExplosion extends Effect {
       this.im = im;
       this.x = x;
       this.y = y;
-      this.vx = (Math.cos(ship.rotation) * ship.maxSpeed / 1000) + (Math.random() - .5) / 10;
-      this.vy = -(Math.sin(ship.rotation) * ship.maxSpeed / 1000) + (Math.random() - .5) / 10;
+
+      if (ship.moving) {
+        double r = ship.rotation + (Math.random() - .5) * Math.PI / 20;
+        this.vx = (Math.cos(r) * ship.maxSpeed / 1000);
+        this.vy = -(Math.sin(r) * ship.maxSpeed / 1000);
+      } else {
+        double r = Math.random() * Math.PI * 2;
+        this.vx = (Math.cos(r) / 10d);
+        this.vy = -(Math.sin(r) / 10d);
+      }
     }
 
     public void tick(int delta) {

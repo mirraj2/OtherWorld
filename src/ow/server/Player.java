@@ -5,13 +5,13 @@ import jexxus.common.Connection;
 public class Player {
 
   private final Connection connection;
-  private final Ship ship;
+  private Ship ship;
+  private Ship lastShip;
 
   private final SyncInfo syncInfo = new SyncInfo();
 
-  public Player(Connection connection, Ship ship) {
+  public Player(Connection connection) {
     this.connection = connection;
-    this.ship = ship;
   }
 
   public Connection getConnection() {
@@ -22,8 +22,17 @@ public class Player {
     return ship;
   }
 
+  public void setShip(Ship ship) {
+    this.lastShip = this.ship;
+    this.ship = ship;
+  }
+
   public SyncInfo getSyncInfo() {
     return syncInfo;
+  }
+
+  public Ship getLastShip() {
+    return lastShip;
   }
 
 }

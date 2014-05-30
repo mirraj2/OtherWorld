@@ -1,15 +1,14 @@
 package ow.client;
 
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
-import com.google.gson.JsonObject;
 import jexxus.client.ClientConnection;
 import jexxus.common.Delivery;
+
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.lwjgl.input.Keyboard;
@@ -22,9 +21,16 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.TrueTypeFont;
+
 import ow.client.arch.SGraphics;
 import ow.client.model.ClientModel;
 import ow.client.model.Ship;
+
+import com.google.common.base.Charsets;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonObject;
 
 public class OWClient extends BasicGame {
 
@@ -35,6 +41,8 @@ public class OWClient extends BasicGame {
   private static final String SERVER_IP = "localhost";
   private static final int PORT = 19883;
 
+  private TrueTypeFont font;
+
   private final ClientModel model = new ClientModel();
   private final NetworkHandler networkHandler = new NetworkHandler(this, model);
   private ClientConnection conn;
@@ -42,6 +50,8 @@ public class OWClient extends BasicGame {
   private BackgroundRenderer backgroundRenderer;
   private GameContainer container;
   private int mouseX, mouseY;
+  private long timeOfDeath;
+
 
   public OWClient() {
     super("Other World");
@@ -68,13 +78,28 @@ public class OWClient extends BasicGame {
     Rectangle cameraLocation = model.getCameraBounds(w, h);
     backgroundRenderer.render(cameraLocation, g);
 
+    g.push();
     model.render(g, w, h);
+    g.pop();
+
+    if (canRespawn()) {
+      g.setColor(Color.white).font(font).textCentered("Click to respawn.", w, h);
+    }
+  }
+
+  private boolean canRespawn() {
+    if (myShip != null) {
+      return false;
+    }
+    long fiveSeconds = TimeUnit.SECONDS.toMillis(3);
+    return System.currentTimeMillis() >= timeOfDeath + fiveSeconds;
   }
 
   @Override
   public void init(GameContainer container) throws SlickException {
     this.container = container;
     backgroundRenderer = new BackgroundRenderer();
+    font = new TrueTypeFont(new Font("Arial", Font.BOLD, 26), true);
   }
 
   @Override
@@ -84,6 +109,15 @@ public class OWClient extends BasicGame {
 
   @Override
   public void mousePressed(int button, int x, int y) {
+    if (myShip == null) {
+      if (canRespawn()) {
+        JsonObject o = new JsonObject();
+        o.addProperty("command", "respawn");
+        sendToServer(o);
+      }
+      return;
+    }
+
     if (button != 0) {
       return;
     }
@@ -131,6 +165,10 @@ public class OWClient extends BasicGame {
 
   @Override
   public void keyPressed(int key, char c) {
+    if (myShip == null) {
+      return;
+    }
+
     Double d = movementDirections.get(key);
     if (d != null) {
       myShip.moving = true;
@@ -144,6 +182,10 @@ public class OWClient extends BasicGame {
 
   @Override
   public void keyReleased(int key, char c) {
+    if (myShip == null) {
+      return;
+    }
+
     if (movementDirections.containsKey(key)) {
       for (Integer i : movementDirections.keySet()) {
         if (Keyboard.isKeyDown(i)) {
@@ -183,6 +225,15 @@ public class OWClient extends BasicGame {
 
   public void setMyShip(Ship ship){
     this.myShip = ship;
+  }
+
+  public Ship getMyShip() {
+    return myShip;
+  }
+
+  public void playerDied() {
+    timeOfDeath = System.currentTimeMillis();
+    myShip = null;
   }
 
   public static void main(String[] args) throws Exception {
