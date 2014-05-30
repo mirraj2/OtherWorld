@@ -16,6 +16,14 @@ public enum ShipType {
     return maxSpeeds.get(this);
   }
 
+  /**
+   * Gets turn speed in radians per millisecond
+   */
+  public double getTurnSpeed() {
+    double d = turnSpeeds.get(this);
+    return d / 60000.0 * Math.PI * 2;
+  }
+
   public Collection<Point> getGunLocations() {
     return gunLocations.get(this);
   }
@@ -34,10 +42,19 @@ public enum ShipType {
 
   private static final Map<ShipType, Double> maxSpeeds =
       ImmutableMap.<ShipType, Double>builder()
-          .put(MINI, 200d)
+          .put(MINI, 2000d)
           .put(SPECTRE, 150d)
           .put(STATION, 1d)
           .put(TEST, 1d)
+          .build();
+
+  // in rotations per minute
+  private static final Map<ShipType, Double> turnSpeeds =
+      ImmutableMap.<ShipType, Double>builder()
+          .put(MINI, 100d)
+          .put(SPECTRE, 100d)
+          .put(STATION, 100d)
+          .put(TEST, 100d)
           .build();
 
   private static final Multimap<ShipType, Point> gunLocations =

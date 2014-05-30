@@ -1,6 +1,7 @@
 package ow.client;
 
 import com.google.common.base.Charsets;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -14,6 +15,8 @@ import ow.client.model.Ship;
 import ow.client.model.Shot;
 import ow.common.Faction;
 import ow.common.ShipType;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class NetworkHandler implements ConnectionListener {
 
@@ -31,8 +34,18 @@ public class NetworkHandler implements ConnectionListener {
 
   @Override
   public void receive(byte[] data, Connection from) {
-    JsonObject o = parser.parse(new String(data, Charsets.UTF_8)).getAsJsonObject();
+    JsonElement e = parser.parse(new String(data, Charsets.UTF_8));
 
+    if (e instanceof JsonArray) {
+      for (JsonElement part : e.getAsJsonArray()) {
+        handle(part.getAsJsonObject());
+      }
+    } else {
+      handle(e.getAsJsonObject());
+    }
+  }
+
+  private void handle(JsonObject o) {
     String command = o.get("command").getAsString().toLowerCase();
 
     if (command.equals("ship")) {
@@ -50,7 +63,6 @@ public class NetworkHandler implements ConnectionListener {
               .setLocation(x, y).setRotation(rotation).moving(moving)
               .movementDirection(movementDirection);
       model.addShip(ship);
-
     } else if (command.equals("planet")) {
       model.addPlanet(new Planet(o.get("id").getAsInt(), o.get("name").getAsString(), o
           .get("color").getAsInt(), o.get("x").getAsDouble(), o.get("y").getAsDouble(),
@@ -58,10 +70,15 @@ public class NetworkHandler implements ConnectionListener {
     } else if (command.equals("update")) {
       int id = o.get("id").getAsInt();
       Ship ship = model.getShip(id);
+      if (ship == null) {
+        logger.warn("Don't know about ship: " + id);
+        return;
+      }
       ship.x = o.get("x").getAsDouble();
       ship.y = o.get("y").getAsDouble();
       ship.rotation = o.get("rotation").getAsDouble();
       ship.moving = o.get("moving").getAsBoolean();
+      ship.active = true;
     } else if (command.equals("shots")) {
       for (JsonElement e : o.getAsJsonArray("shots")) {
         JsonObject s = e.getAsJsonObject();
@@ -69,13 +86,6 @@ public class NetworkHandler implements ConnectionListener {
             .getAsDouble(), s.get("rotation").getAsDouble(), s.get("velocity").getAsDouble(), s
             .get("max_distance").getAsDouble()));
       }
-    } else if (command.equals("take_control")) {
-      int id = o.get("id").getAsInt();
-      System.out.println("TAKE CONTROL: " + id);
-
-      Ship ship = model.getShip(id);
-      client.setMyShip(ship);
-      model.focus(ship);
     } else if (command.equals("hit")) {
       int shotID = o.get("shot").getAsInt();
       int shipID = o.get("ship").getAsInt();
@@ -89,7 +99,23 @@ public class NetworkHandler implements ConnectionListener {
       }
 
       model.removeShot(shotID);
-    } else {
+    }
+    else if (command.equals("offscreen")) {
+      int id = o.get("id").getAsInt();
+      Ship ship = model.getShip(id);
+      if (ship != null) {
+        ship.active = false;
+      }
+    } else if (command.equals("take_control")) {
+      int id = o.get("id").getAsInt();
+      Ship ship = model.getShip(id);
+
+      checkNotNull(ship);
+
+      client.setMyShip(ship);
+      model.focus(ship);
+    }
+    else {
       logger.warn("unknown message: " + o);
     }
   }

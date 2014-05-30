@@ -22,6 +22,11 @@ public class Ship {
 
   private Image image;
 
+  /**
+   * Whether this ship is an active part of our model.
+   */
+  public boolean active = true;
+
   public Ship(int id, Faction faction, ShipType type, double hp, double maxHP) {
     this.id = id;
     this.faction = faction;
@@ -63,6 +68,10 @@ public class Ship {
   }
 
   public void tick(int delta) {
+    if (!active) {
+      return;
+    }
+
     if (type == ShipType.STATION) {
       rotation += 2 * Math.PI * delta / 1000 / 100;
     }

@@ -6,7 +6,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/SwingLib"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Jexxus"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
-	<classpathentry kind="lib" path="lib/guava-14.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/gson-2.2.4.jar"/>
 	<classpathentry kind="lib" path="lib/slick.jar" sourcepath="open_src/slick_src.zip"/>
 	<classpathentry kind="lib" path="lib/lwjgl_util.jar"/>
@@ -16,5 +15,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/miglayout-4.0-swing.jar"/>
+	<classpathentry kind="lib" path="lib/guava-17.0.jar" sourcepath="open_src/guava-17.0-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -7,6 +7,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -29,24 +30,17 @@ public class OWServer implements ConnectionListener {
   private static final int PORT = 19883;
   private static final JsonParser parser = new JsonParser();
 
-  private final Map<Connection, Ship> connectionShips = Maps.newConcurrentMap();
+  private final Map<Connection, Player> connectionPlayers = Maps.newConcurrentMap();
+  private final GameSync sync = new GameSync(this);
   private final World world = new World(this);
 
-
-  private void sendFullUpdate(ServerConnection conn) {
-    for (Ship ship : world.getShips()) {
-      send(createShipObject(ship), conn);
-    }
-
+  private void sendFullUpdate(Player player) {
+    sync.onNewPlayer(player);
     for (Planet planet : world.getPlanets()) {
-      send(createPlanetObject(planet), conn);
+      send(createPlanetObject(planet), player.getConnection());
     }
   }
 
-  public void onShipAdded(Ship ship) {
-    sendToAll(createShipObject(ship));
-  }
-  
   public void onHit(Shot shot, Ship ship, double damage) {
     JsonObject o = new JsonObject();
     o.addProperty("command", "hit");
@@ -60,49 +54,17 @@ public class OWServer implements ConnectionListener {
     sendToAll(createShotsObject(shots));
   }
 
-  public void sendUpdate(Ship ship) {
-    sendToAll(createShipUpdate(ship));
-  }
-
-  private void sendToAllBut(JsonObject o, Connection sender) {
+  private void sendToAllBut(JsonElement o, Connection sender) {
     String s = o.toString();
-    for (Connection c : connectionShips.keySet()) {
+    for (Connection c : connectionPlayers.keySet()) {
       if (c != sender) {
         send(s, c);
       }
     }
   }
 
-  private void sendToAll(JsonObject o) {
+  public void sendToAll(JsonElement o) {
     sendToAllBut(o, null);
-  }
-
-  public static JsonObject createShipUpdate(Ship ship) {
-    JsonObject o = new JsonObject();
-    o.addProperty("command", "update");
-    o.addProperty("id", ship.id);
-    o.addProperty("x", ship.x);
-    o.addProperty("y", ship.y);
-    o.addProperty("rotation", ship.rotation);
-    o.addProperty("moving", ship.moving);
-    o.addProperty("direction", ship.movementDirection);
-    return o;
-  }
-
-  private JsonObject createShipObject(Ship ship) {
-    JsonObject o = new JsonObject();
-    o.addProperty("command", "ship");
-    o.addProperty("id", ship.id);
-    o.addProperty("faction", ship.faction.name());
-    o.addProperty("type", ship.type.name());
-    o.addProperty("x", ship.x);
-    o.addProperty("y", ship.y);
-    o.addProperty("rotation", ship.rotation);
-    o.addProperty("direction", ship.movementDirection);
-    o.addProperty("moving", ship.moving);
-    o.addProperty("max_hp", ship.maxHP);
-    o.addProperty("hp", ship.hp);
-    return o;
   }
 
   private JsonObject createPlanetObject(Planet planet) {
@@ -144,8 +106,8 @@ public class OWServer implements ConnectionListener {
   @Override
   public void connectionBroken(Connection broken, boolean forced) {
     logger.debug("Lost connection with: " + broken);
-    Ship ship = connectionShips.remove(broken);
-    world.remove(ship);
+    Player player = connectionPlayers.remove(broken);
+    world.remove(player.getShip());
   }
 
   @Override
@@ -153,7 +115,7 @@ public class OWServer implements ConnectionListener {
     JsonObject o = parser.parse(new String(data, Charsets.UTF_8)).getAsJsonObject();
     String command = o.get("command").getAsString();
 
-    Ship ship = connectionShips.get(from);
+    Ship ship = connectionPlayers.get(from).getShip();
 
     if (command.equals("update")) {
       checkArgument(Objects.equal(ship.id, o.get("id").getAsInt()),
@@ -163,6 +125,7 @@ public class OWServer implements ConnectionListener {
       ship.y = o.get("y").getAsDouble();
       ship.moving = o.get("moving").getAsBoolean();
       ship.rotation = o.get("rotation").getAsDouble();
+      ship.movementDirection = o.get("direction").getAsDouble();
 
       sendToAllBut(o, from);
     } else if (command.equals("shoot")) {
@@ -179,8 +142,9 @@ public class OWServer implements ConnectionListener {
 
     Ship clientShip = new Ship(Faction.EXPLORERS, ShipType.MINI, world.getPlayerSpawnLocation());
     world.add(clientShip);
-    connectionShips.put(conn, clientShip);
-    sendFullUpdate(conn);
+    Player player = new Player(conn, clientShip);
+    connectionPlayers.put(conn, player);
+    sendFullUpdate(player);
 
     JsonObject o = new JsonObject();
     o.addProperty("command", "take_control");
@@ -192,12 +156,24 @@ public class OWServer implements ConnectionListener {
     send(o.toString(), conn);
   }
 
-  private void send(String s, Connection conn) {
+  public void send(String s, Connection conn) {
     try {
       conn.send(s.getBytes(Charsets.UTF_8), Delivery.RELIABLE);
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  public Iterable<Player> getPlayers() {
+    return connectionPlayers.values();
+  }
+
+  public GameSync getSync() {
+    return sync;
+  }
+
+  public World getWorld() {
+    return world;
   }
 
   public static void main(String[] args) {

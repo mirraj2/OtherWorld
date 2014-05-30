@@ -2,6 +2,8 @@ package ow.common;
 
 public class OMath {
 
+  public static final double TWO_PI = Math.PI * 2;
+
   public static double distanceSquared(double x, double x2, double y, double y2) {
     double xDiff = x - x2;
     double yDiff = y - y2;
@@ -14,6 +16,10 @@ public class OMath {
       ret += Math.PI * 2;
     }
     return ret;
+  }
+
+  public static boolean equals(double a, double b) {
+    return Math.abs(a - b) < .0000001;
   }
 
 }

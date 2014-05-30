@@ -8,6 +8,7 @@ import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.Shape;
 import ow.client.ImageLoader;
 import ow.common.Faction;
+import ow.common.OMath;
 import ow.common.ShipType;
 
 public class Ship extends Entity {
@@ -53,6 +54,10 @@ public class Ship extends Entity {
   }
 
   public Ship rotation(double rotation) {
+    rotation %= OMath.TWO_PI;
+    if (rotation < 0) {
+      rotation += OMath.TWO_PI;
+    }
     this.rotation = rotation;
     return this;
   }
@@ -73,6 +78,43 @@ public class Ship extends Entity {
 
   public boolean isAlive() {
     return hp > 0;
+  }
+
+  /**
+   * Returns the amount left to rotate.
+   */
+  public double rotateTo(Entity target, double millis) {
+    double targetR = OMath.getTargetRotation(x, y, target.x, target.y);
+
+    if (OMath.equals(rotation, targetR)) {
+      return 0;
+    }
+
+    rotateTo(targetR, millis);
+
+    return Math.abs(targetR - rotation) % Math.PI;
+  }
+
+  private void rotateTo(double targetR, double millis) {
+    double turnAmount = type.getTurnSpeed() * millis;
+
+    if (Math.abs(rotation - targetR) < turnAmount) {
+      rotation(targetR);
+      return;
+    }
+
+    boolean turnLeft;
+    if (rotation < targetR) {
+      turnLeft = targetR - rotation < Math.PI;
+    } else {
+      turnLeft = rotation - targetR >= Math.PI;
+    }
+
+    if (turnLeft) {
+      rotation(rotation + turnAmount);
+    } else {
+      rotation(rotation - turnAmount);
+    }
   }
 
 }

@@ -142,7 +142,9 @@ public class ClientModel {
     }
 
     for (Ship ship : ships.values()) {
-      render(g, ship);
+      if (ship.active) {
+        render(g, ship);
+      }
     }
 
     for (Shot shot : shots.values()) {

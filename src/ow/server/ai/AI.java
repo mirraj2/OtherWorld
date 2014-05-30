@@ -1,4 +1,6 @@
-package ow.server;
+package ow.server.ai;
+
+import ow.server.World;
 
 public abstract class AI {
 
