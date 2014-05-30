@@ -6,6 +6,7 @@ import java.util.Collection;
 
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.Shape;
+
 import ow.client.ImageLoader;
 import ow.common.Faction;
 import ow.common.OMath;
@@ -84,23 +85,27 @@ public class Ship extends Entity {
    * Returns the amount left to rotate.
    */
   public double rotateTo(Entity target, double millis) {
-    double targetR = OMath.getTargetRotation(x, y, target.x, target.y);
-
-    if (OMath.equals(rotation, targetR)) {
-      return 0;
-    }
-
-    rotateTo(targetR, millis);
-
-    return Math.abs(targetR - rotation) % Math.PI;
+    return rotateTo(target.x, target.y, millis);
   }
 
-  private void rotateTo(double targetR, double millis) {
+  /**
+   * Returns the amount left to rotate.
+   */
+  public double rotateTo(double targetX, double targetY, double millis) {
+    double targetR = OMath.getTargetRotation(this.x, this.y, targetX, targetY);
+
+    return rotateTo(targetR, millis);
+  }
+
+  /**
+   * Returns the amount left to rotate.
+   */
+  public double rotateTo(double targetR, double millis) {
     double turnAmount = type.getTurnSpeed() * millis;
 
     if (Math.abs(rotation - targetR) < turnAmount) {
       rotation(targetR);
-      return;
+      return 0;
     }
 
     boolean turnLeft;
@@ -115,6 +120,8 @@ public class Ship extends Entity {
     } else {
       rotation(rotation - turnAmount);
     }
+
+    return Math.abs(targetR - rotation) % Math.PI;
   }
 
 }

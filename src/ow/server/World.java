@@ -16,7 +16,7 @@ import org.newdawn.slick.geom.Shape;
 import ow.common.Faction;
 import ow.common.ShipType;
 import ow.server.ai.AI;
-import ow.server.ai.FedSpawner;
+import ow.server.ai.ShipSpawner;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -47,18 +47,11 @@ public class World {
 
     this.planets = new GraphGenerator().generatePlanets();
     startingPlanet = getFirst(planets, null);
-    
-    add(new Ship(Faction.EXPLORERS, ShipType.STATION, startingPlanet.x + 300,
-        startingPlanet.y + 200));
 
-    for (Planet planet : planets) {
-      if (planet != startingPlanet) {
-        Ship fedStation = new Ship(Faction.FEDERATION, ShipType.STATION, planet.x + 300,
-            planet.y - 100);
-        add(fedStation);
-        addAI(new FedSpawner(this, fedStation));
-      }
-    }
+    Ship starterStation = add(new Ship(Faction.EXPLORERS, ShipType.STATION, startingPlanet.x + 300, startingPlanet.y + 200));
+    addAI(new ShipSpawner(this, starterStation, ShipType.MINI, 20, 1.0));
+
+    new WorldGenerator(this).generate();
 
     Executors.newSingleThreadExecutor().execute(updater);
   }
@@ -172,6 +165,7 @@ public class World {
     Line line = new Line((float) x1, (float) y1, (float) x2, (float) y2);
     for (Ship ship : ships.values()) {
       if (ship.faction == shooterFaction) {
+        // no friendly fire
         continue;
       }
       if (ship.distSquared(x2, y2) > 1000 * 1000) {
@@ -185,10 +179,12 @@ public class World {
     return null;
   }
 
-  public void add(Ship ship) {
+  public Ship add(Ship ship) {
     checkNotNull(ship);
-    
+
     this.ships.put(ship.id, ship);
+
+    return ship;
   }
 
   public void addAI(AI ai) {
@@ -216,6 +212,10 @@ public class World {
 
   public Iterable<Planet> getPlanets() {
     return planets;
+  }
+
+  public Planet getStartingPlanet() {
+    return startingPlanet;
   }
 
   public OWServer getServer() {

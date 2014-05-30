@@ -3,6 +3,7 @@ package ow.server.ai;
 import java.util.concurrent.TimeUnit;
 
 import ow.common.OMath;
+import ow.server.Entity;
 import ow.server.Ship;
 import ow.server.World;
 
@@ -10,8 +11,7 @@ public class ProtectAI extends ShipAI {
 
   private static final double PATROL_DISTANCE = 300;
 
-  private final Ship toProtect;
-  private final Task patrol = Task.every(2, TimeUnit.SECONDS);
+  private final Entity toProtect;
   private final Task findTargetToDestroy = Task.every(1, TimeUnit.SECONDS);
   private final Task fire = Task.every(1, TimeUnit.SECONDS);
 
@@ -20,7 +20,10 @@ public class ProtectAI extends ShipAI {
 
   private boolean returning = false;
 
-  public ProtectAI(World world, Ship ship, Ship toProtect) {
+  private boolean hasPatrolTarget = false;
+  private double targetX, targetY;
+
+  public ProtectAI(World world, Ship ship, Entity toProtect) {
     super(world, ship);
     this.toProtect = toProtect;
   }
@@ -40,6 +43,9 @@ public class ProtectAI extends ShipAI {
 
     if (target == null && findTargetToDestroy.isReady()) {
       target = getClosestEnemy(1000);
+      if (target != null) {
+        hasPatrolTarget = false;
+      }
     }
     
     if (target == null) {
@@ -67,15 +73,33 @@ public class ProtectAI extends ShipAI {
 
   // just fly around the ship we're protecting.
   private void patrol(double millis) {
-    if (!patrol.isReady()) {
-      return;
+    if (hasPatrolTarget) {
+      if (ship.distSquared(targetX, targetY) < 400) {
+        goToNextPatrolLocation();
+      } else {
+        continueMoving(millis);
+      }
+    } else {
+      goToNextPatrolLocation();
     }
-    double targetX = toProtect.x + Math.random() * PATROL_DISTANCE * 2 - PATROL_DISTANCE;
-    double targetY = toProtect.y + Math.random() * PATROL_DISTANCE * 2 - PATROL_DISTANCE;
+  }
 
-    double r = OMath.getTargetRotation(ship.x, ship.y, targetX, targetY);
-    ship.rotation(r).moving(true);
-    world.sendUpdate(ship);
+  private void continueMoving(double millis) {
+    double oldR = ship.rotation;
+
+    double d = ship.rotateTo(targetX, targetY, millis);
+    ship.moving(d < Math.PI / 3);
+
+    if (oldR != ship.rotation) {
+      world.sendUpdate(ship);
+    }
+  }
+
+  private void goToNextPatrolLocation() {
+    targetX = toProtect.x + Math.random() * PATROL_DISTANCE * 2 - PATROL_DISTANCE;
+    targetY = toProtect.y + Math.random() * PATROL_DISTANCE * 2 - PATROL_DISTANCE;
+
+    hasPatrolTarget = true;
   }
 
   private void pursueTarget(double millis) {

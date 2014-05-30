@@ -36,7 +36,7 @@ public class OWClient extends BasicGame {
 
   private static final Logger logger = Logger.getLogger(OWClient.class);
 
-  private static final boolean FULLSCREEN = false;
+  private static final boolean FULLSCREEN = true;
 
   private static final String SERVER_IP = "localhost";
   private static final int PORT = 19883;
