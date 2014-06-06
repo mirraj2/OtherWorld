@@ -1,10 +1,11 @@
 package ow.server.ai;
 
-import com.google.common.base.Predicate;
-
 import ow.server.model.Ship;
 import ow.server.model.World;
 
+import com.google.common.base.Predicate;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.getFirst;
 
@@ -15,7 +16,7 @@ public abstract class ShipAI extends AI {
   public ShipAI(World world, Ship ship) {
     super(world);
 
-    this.ship = ship;
+    this.ship = checkNotNull(ship);
   }
 
   @Override
@@ -35,6 +36,10 @@ public abstract class ShipAI extends AI {
   }
 
   protected abstract boolean run(double millis);
+
+  public Ship getShip() {
+    return ship;
+  }
 
   private final Predicate<Ship> enemy = new Predicate<Ship>() {
     @Override

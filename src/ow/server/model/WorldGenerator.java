@@ -4,6 +4,7 @@ import java.util.Random;
 
 import ow.common.Faction;
 import ow.common.ShipType;
+import ow.server.ai.ExpandAI;
 import ow.server.ai.ProtectAI;
 import ow.server.ai.ShipSpawner;
 
@@ -55,13 +56,14 @@ public class WorldGenerator {
   private void generateBase(Planet planet, Faction faction) {
     ShipType spawnType;
     if (rand.nextDouble() < .2) {
-      spawnType = ShipType.SPECTRE;
+      spawnType = ShipType.FIGHTER;
     } else {
       spawnType = ShipType.MINI;
     }
 
     Ship station = world.add(new Ship(faction, ShipType.STATION, planet.x + random(400), planet.y + random(400)));
-    world.addAI(new ShipSpawner(world, station, spawnType, 2 + rand.nextInt(11), Math.random() + .01));
+    ShipSpawner spawner = new ShipSpawner(world, station, spawnType, 2 + rand.nextInt(11), Math.random() + .01);
+    world.addAI(new ExpandAI(world, spawner));
   }
   
   private void generateUnits(Planet planet, Faction faction) {
@@ -71,7 +73,7 @@ public class WorldGenerator {
     for (int i = 0; i < numUnits; i++) {
       ShipType shipType;
       if (rand.nextDouble() < .3333) {
-        shipType = ShipType.SPECTRE;
+        shipType = ShipType.FIGHTER;
       } else {
         shipType = ShipType.MINI;
       }

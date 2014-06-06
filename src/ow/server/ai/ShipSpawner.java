@@ -9,6 +9,9 @@ import ow.server.model.World;
 
 import com.google.common.collect.Lists;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class ShipSpawner extends ShipAI {
 
   private final List<Ship> shipsSpawned = Lists.newArrayList();
@@ -20,7 +23,11 @@ public class ShipSpawner extends ShipAI {
   public ShipSpawner(World world, Ship spawner, ShipType spawnType, int maxShips,
       double spawnChance) {
     super(world, spawner);
-    this.spawnType = spawnType;
+
+    checkArgument(maxShips > 0);
+    checkArgument(spawnChance > 0);
+
+    this.spawnType = checkNotNull(spawnType);
     this.maxShips = maxShips;
     this.spawnChance = spawnChance;
   }
@@ -49,6 +56,10 @@ public class ShipSpawner extends ShipAI {
     shipsSpawned.add(s);
     world.add(s);
     world.addAI(new ProtectAI(world, s, ship));
+  }
+
+  public boolean isAtMaxCapacity() {
+    return shipsSpawned.size() == maxShips;
   }
 
 }

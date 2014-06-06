@@ -88,9 +88,8 @@ public class ProtectAI extends ShipAI {
   private void continueMoving(double millis) {
     double oldR = ship.rotation;
 
-    double d = ship.rotateTo(targetX, targetY, millis);
-    // ship.moving(d < Math.PI / 3);
     ship.moving(true);
+    ship.rotateTo(targetX, targetY, millis, true);
 
     if (!OMath.equals(oldR, ship.rotation)) {
       world.sendUpdate(ship);
@@ -102,6 +101,8 @@ public class ProtectAI extends ShipAI {
     targetY = toProtect.y + Math.random() * PATROL_DISTANCE * 2 - PATROL_DISTANCE;
 
     hasPatrolTarget = true;
+    ship.moving(true);
+    world.sendUpdate(ship);
   }
 
   private void pursueTarget(double millis) {

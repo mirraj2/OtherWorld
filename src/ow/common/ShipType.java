@@ -10,7 +10,7 @@ import com.google.common.collect.Multimap;
 
 public enum ShipType {
 
-  MINI, SPECTRE, STATION, CHEATSHIP;
+  MINI, FIGHTER, COLONY_SHIP, STATION, CHEATSHIP;
 
   public double getMaxSpeed() {
     return maxSpeeds.get(this);
@@ -43,7 +43,8 @@ public enum ShipType {
   private static final Map<ShipType, Double> maxSpeeds =
       ImmutableMap.<ShipType, Double>builder()
           .put(MINI, 200d)
-          .put(SPECTRE, 150d)
+          .put(FIGHTER, 150d)
+          .put(COLONY_SHIP, 50d)
           .put(STATION, 1d)
           .put(CHEATSHIP, 2000d)
           .build();
@@ -52,25 +53,27 @@ public enum ShipType {
   private static final Map<ShipType, Double> turnSpeeds =
       ImmutableMap.<ShipType, Double>builder()
           .put(MINI, 30d)
-          .put(SPECTRE, 30d)
+          .put(FIGHTER, 30d)
           .put(STATION, 30d)
+          .put(COLONY_SHIP, 15d)
           .put(CHEATSHIP, 100d)
           .build();
 
   private static final Multimap<ShipType, Point> gunLocations =
       ImmutableMultimap.<ShipType, Point>builder()
           .put(MINI, new Point(11, 0))
-          .put(SPECTRE, new Point(22, -13))
-          .put(SPECTRE, new Point(22, 13))
+          .put(FIGHTER, new Point(6, -13))
+          .put(FIGHTER, new Point(6, 13))
           .put(CHEATSHIP, new Point(65, 0))
           .build();
 
   private static final Map<ShipType, Double> hitpoints =
       ImmutableMap.<ShipType, Double>builder()
           .put(MINI, 25d)
-          .put(SPECTRE, 40d)
-          .put(STATION, 500d)
-          .put(CHEATSHIP, 500d)
+          .put(FIGHTER, 50d)
+          .put(COLONY_SHIP, 250d)
+          .put(STATION, 1000d)
+          .put(CHEATSHIP, 999999d)
           .build();
 
 }
