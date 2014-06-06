@@ -6,9 +6,12 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonObject;
 import jexxus.client.ClientConnection;
 import jexxus.common.Delivery;
-
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.lwjgl.input.Keyboard;
@@ -22,21 +25,15 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.TrueTypeFont;
-
 import ow.client.arch.SGraphics;
 import ow.client.model.ClientModel;
 import ow.client.model.Ship;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
-import com.google.gson.JsonObject;
 
 public class OWClient extends BasicGame {
 
   private static final Logger logger = Logger.getLogger(OWClient.class);
 
-  private static final boolean FULLSCREEN = true;
+  private static final boolean FULLSCREEN = false;
 
   private static final String SERVER_IP = "localhost";
   private static final int PORT = 19883;
@@ -165,16 +162,17 @@ public class OWClient extends BasicGame {
 
   @Override
   public void keyPressed(int key, char c) {
-    if (myShip == null) {
-      return;
+    if (myShip != null) {
+      Double d = movementDirections.get(key);
+      if (d != null) {
+        myShip.moving = true;
+        myShip.movementDirection = d;
+        sendShipUpdate();
+
+      }
     }
 
-    Double d = movementDirections.get(key);
-    if (d != null) {
-      myShip.moving = true;
-      myShip.movementDirection = d;
-      sendShipUpdate();
-    } else if (key == Input.KEY_ESCAPE) {
+    if (key == Input.KEY_ESCAPE) {
       container.exit();
       System.exit(0);
     }

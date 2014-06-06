@@ -8,10 +8,15 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.TreeMultimap;
+import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.log4j.Logger;
 import org.newdawn.slick.geom.Line;
 import org.newdawn.slick.geom.Shape;
-
 import ow.common.Faction;
 import ow.common.ShipType;
 import ow.server.OWServer;
@@ -19,11 +24,6 @@ import ow.server.ai.AI;
 import ow.server.ai.ShipSpawner;
 import ow.server.arch.RTree;
 import ow.server.sync.GameSync;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.Uninterruptibles;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.getFirst;
@@ -60,7 +60,7 @@ public class World {
   public Collection<Ship> getNearbyShips(Entity e, int radius) {
     checkNotNull(e);
 
-    Map<Double, Ship> m = Maps.newTreeMap();
+    Multimap<Double, Ship> m = TreeMultimap.create();
 
     radius = radius * radius;
     for (Ship ship : ships.values()) {

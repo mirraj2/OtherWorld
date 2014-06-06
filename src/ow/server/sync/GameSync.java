@@ -4,15 +4,14 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.collect.Sets;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import ow.server.OWServer;
 import ow.server.arch.SwapSet;
 import ow.server.model.Player;
 import ow.server.model.Ship;
 import ow.server.model.Shot;
-
-import com.google.common.collect.Sets;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 
 /**
  * In charge of telling players when relevant entities have updated.
@@ -62,12 +61,13 @@ public class GameSync {
     Set<Ship> newlyInRange =
         Sets.difference(Sets.difference(nearby, brandNewShips), info.shipsNearby);
 
-    int numNew = 0, numOut = 0, numUpdate = 0;
+    int numNew = 0, numOut = 0, numUpdate = 0, numShots = 0;
     
     JsonArray a = new JsonArray();
     // todo only send the shots that are near this player
     for (ShotHit shotHit : shotsHit) {
       a.add(createShotHitObject(shotHit));
+      numShots++;
     }
 
     for (Ship ship : brandNewShips) {
@@ -86,7 +86,7 @@ public class GameSync {
     if (a.size() > 0) {
       StringBuilder sb = new StringBuilder();
       sb.append("Update: ").append(numNew).append(" new, ")
-          .append(numOut + " out, " + numUpdate + " updated");
+          .append(numOut + " out, " + numUpdate + " updated" + ", " + numShots + " shots");
       System.out.println(sb);
 
       server.send(a.toString(), player.getConnection());
@@ -112,7 +112,6 @@ public class GameSync {
   }
 
   public void onHit(Shot shot, Ship ship, double damage) {
-    // dirty.add(ship);
     shotsHit.add(new ShotHit(shot, ship, damage));
   }
 

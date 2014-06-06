@@ -6,13 +6,12 @@ import java.util.Collection;
 
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.Shape;
-
 import ow.client.ImageLoader;
 import ow.common.Faction;
 import ow.common.OMath;
 import ow.common.ShipType;
 
-public class Ship extends Entity {
+public class Ship extends Entity implements Comparable<Ship> {
 
   public final ShipType type;
   public final Faction faction;
@@ -122,6 +121,11 @@ public class Ship extends Entity {
     }
 
     return Math.abs(targetR - rotation) % Math.PI;
+  }
+
+  @Override
+  public int compareTo(Ship o) {
+    return id - o.id;
   }
 
 }

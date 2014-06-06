@@ -89,9 +89,10 @@ public class ProtectAI extends ShipAI {
     double oldR = ship.rotation;
 
     double d = ship.rotateTo(targetX, targetY, millis);
-    ship.moving(d < Math.PI / 3);
+    // ship.moving(d < Math.PI / 3);
+    ship.moving(true);
 
-    if (oldR != ship.rotation) {
+    if (!OMath.equals(oldR, ship.rotation)) {
       world.sendUpdate(ship);
     }
   }
