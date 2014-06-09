@@ -6,12 +6,9 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
-import com.google.gson.JsonObject;
 import jexxus.client.ClientConnection;
 import jexxus.common.Delivery;
+
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.lwjgl.input.Keyboard;
@@ -25,9 +22,15 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.TrueTypeFont;
+
 import ow.client.arch.SGraphics;
 import ow.client.model.ClientModel;
 import ow.client.model.Ship;
+
+import com.google.common.base.Charsets;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonObject;
 
 public class OWClient extends BasicGame {
 
@@ -248,7 +251,7 @@ public class OWClient extends BasicGame {
     if (FULLSCREEN) {
       container.setDisplayMode(mode.getWidth(), mode.getHeight(), true);
     } else {
-      container.setDisplayMode(3 * mode.getWidth() / 4, 3 * mode.getHeight() / 4, false);
+      container.setDisplayMode(5 * mode.getWidth() / 6, 5 * mode.getHeight() / 6, false);
     }
 
     container.start();

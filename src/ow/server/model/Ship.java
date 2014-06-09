@@ -6,6 +6,7 @@ import java.util.Collection;
 
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.Shape;
+
 import ow.client.ImageLoader;
 import ow.common.Faction;
 import ow.common.OMath;
@@ -80,18 +81,40 @@ public class Ship extends Entity implements Comparable<Ship> {
     return hp > 0;
   }
 
-  /**
-   * Returns the amount left to rotate.
-   */
-  public double rotateTo(Entity target, double millis) {
-    return rotateTo(target.x, target.y, millis);
+  public boolean inRange(Entity e, int radius) {
+    return distSquared(e) <= radius * radius;
   }
 
   /**
    * Returns the amount left to rotate.
    */
-  public double rotateTo(double targetX, double targetY, double millis) {
+  public double rotateTo(Entity target, double millis) {
+    return rotateTo(target.x, target.y, millis, false);
+  }
+
+  /**
+   * Returns the amount left to rotate.
+   */
+  public double rotateTo(double targetX, double targetY, double millis, boolean avoidLoops) {
     double targetR = OMath.getTargetRotation(this.x, this.y, targetX, targetY);
+
+    if (avoidLoops) {
+      double diff = Math.abs(this.rotation - targetR);
+
+      boolean doRotation = true;
+
+      if (diff > Math.PI / 2) {
+        if (distSquared(targetX, targetY) < 100 * 100) {
+          // don't turn if we are very close to our target
+          // otherwise this will cause us to fly in circles
+          doRotation = false;
+        }
+      }
+
+      if (!doRotation) {
+        return diff;
+      }
+    }
 
     return rotateTo(targetR, millis);
   }

@@ -217,11 +217,13 @@ public class ClientModel {
   }
 
   public void zoomOut() {
-    zoom /= 2;
+    zoom /= 1.1;
+    // zoom /= 2;
   }
 
   public void zoomIn() {
-    zoom *= 2;
+    zoom *= 1.1;
+    // zoom *= 2;
   }
 
 }

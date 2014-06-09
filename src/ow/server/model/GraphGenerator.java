@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import ow.server.arch.RTree;
+import ow.server.arch.qtree.QuadTree;
+import ow.server.arch.qtree.Query;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
@@ -17,19 +18,21 @@ import static com.google.common.collect.Iterables.getFirst;
 public class GraphGenerator {
 
   private static final double MIN_DIST_BETWEEN_PLANETS = 1600;
+  private static final double MAP_SIZE = 100 * 1000;
+  private static final int NUM_PLANETS = 100;
 
   private static final Random rand = new Random();
 
-  private RTree<Planet> planets = new RTree<>();
+  private QuadTree<Planet> planets = new QuadTree<>(-MAP_SIZE, -MAP_SIZE, MAP_SIZE * 2, MAP_SIZE * 2);
 
-  public RTree<Planet> generatePlanets() {
+  public QuadTree<Planet> generatePlanets() {
     int mapSize = 20000;
 
-    outer: for (int i = 0; i < 100; i++) {
+    outer: for (int i = 0; i < NUM_PLANETS; i++) {
       int x = rand.nextInt(mapSize);
       int y = rand.nextInt(mapSize);
 
-      if (planets.find(x, y, MIN_DIST_BETWEEN_PLANETS) != null) {
+      if (planets.singleSelect(Query.start(x, y).radius(MIN_DIST_BETWEEN_PLANETS)) != null) {
         i--;
         continue outer;
       }

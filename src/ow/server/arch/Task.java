@@ -1,4 +1,4 @@
-package ow.server.ai;
+package ow.server.arch;
 
 import java.util.concurrent.TimeUnit;
 
