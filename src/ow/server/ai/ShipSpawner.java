@@ -4,9 +4,12 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import ow.common.ShipType;
+import ow.server.OWServer;
+import ow.server.arch.Task;
 import ow.server.model.Ship;
 import ow.server.model.World;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -42,7 +45,7 @@ public class ShipSpawner extends ShipAI {
     }
 
     if (shipsSpawned.size() < maxShips && spawnTask.isReady()) {
-      if (Math.random() < spawnChance) {
+      if (OWServer.FAST_SPAWN || Math.random() < spawnChance) {
         spawn();
       }
     }
@@ -54,12 +57,18 @@ public class ShipSpawner extends ShipAI {
     double r = Math.random() * Math.PI * 2;
     Ship s = new Ship(ship.faction, spawnType, ship.x, ship.y).rotation(r);
     shipsSpawned.add(s);
-    world.add(s);
+    world.addShip(s);
     world.addAI(new ProtectAI(world, s, ship));
   }
 
-  public boolean isAtMaxCapacity() {
-    return shipsSpawned.size() == maxShips;
+  public int getNumShipsSpawned() {
+    return shipsSpawned.size();
+  }
+
+  public List<Ship> emptySpawnList() {
+    List<Ship> ret = ImmutableList.copyOf(shipsSpawned);
+    shipsSpawned.clear();
+    return ret;
   }
 
 }

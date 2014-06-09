@@ -4,19 +4,23 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.collect.Sets;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import ow.server.OWServer;
 import ow.server.arch.SwapSet;
+import ow.server.arch.qtree.Query;
 import ow.server.model.Player;
 import ow.server.model.Ship;
 import ow.server.model.Shot;
+
+import com.google.common.collect.Sets;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 /**
  * In charge of telling players when relevant entities have updated.
  */
 public class GameSync {
+
+  private static boolean DEBUG = false;
 
   private final OWServer server;
 
@@ -30,7 +34,13 @@ public class GameSync {
         TimeUnit.MILLISECONDS);
   }
 
-  public void remove(Ship ship) {}
+  public void markUpdated(Ship ship) {
+    dirty.add(ship);
+  }
+
+  public void onHit(Shot shot, Ship ship, double damage) {
+    shotsHit.add(new ShotHit(shot, ship, damage));
+  }
 
   private void sendUpdates(Set<Ship> updated, Set<ShotHit> shotsHit) {
     for (Player player : server.getPlayers()) {
@@ -53,9 +63,10 @@ public class GameSync {
       }
     }
 
-    Set<Ship> nearby = Sets.newHashSet(server.getWorld().getNearbyShips(playersShip, 2000));
+    Query query = Query.start(playersShip.x, playersShip.y).radius(2000);
+    Set<Ship> nearby = Sets.newHashSet(server.getWorld().getShips().select(query));
     nearby.add(playersShip);
-    
+
     Set<Ship> brandNewShips = Sets.difference(nearby, info.shipsSeen);
     Set<Ship> outOfRange = Sets.difference(info.shipsNearby, nearby);
     Set<Ship> newlyInRange =
@@ -83,14 +94,14 @@ public class GameSync {
       numUpdate++;
     }
 
-    if (a.size() > 0) {
+    if (DEBUG && a.size() > 0) {
       StringBuilder sb = new StringBuilder();
       sb.append("Update: ").append(numNew).append(" new, ")
           .append(numOut + " out, " + numUpdate + " updated" + ", " + numShots + " shots");
       System.out.println(sb);
+    }
 
       server.send(a.toString(), player.getConnection());
-    }
 
     info.shipsNearby = nearby;
     info.shipsSeen.addAll(nearby);
@@ -106,14 +117,6 @@ public class GameSync {
       sendUpdates(dirty.get(), shotsHit.get());
     }
   };
-
-  public void markUpdated(Ship ship) {
-      dirty.add(ship);
-  }
-
-  public void onHit(Shot shot, Ship ship, double damage) {
-    shotsHit.add(new ShotHit(shot, ship, damage));
-  }
 
   private JsonObject createShotHitObject(ShotHit shotHit) {
     JsonObject o = new JsonObject();

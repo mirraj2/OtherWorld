@@ -81,6 +81,10 @@ public class Ship extends Entity implements Comparable<Ship> {
     return hp > 0;
   }
 
+  public boolean inRange(Entity e, int radius) {
+    return distSquared(e) <= radius * radius;
+  }
+
   /**
    * Returns the amount left to rotate.
    */

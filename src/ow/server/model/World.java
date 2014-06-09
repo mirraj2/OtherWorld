@@ -2,28 +2,30 @@ package ow.server.model;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.TreeMultimap;
-import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.log4j.Logger;
 import org.newdawn.slick.geom.Line;
 import org.newdawn.slick.geom.Shape;
+
 import ow.common.Faction;
 import ow.common.ShipType;
 import ow.server.OWServer;
 import ow.server.ai.AI;
+import ow.server.ai.ShipAI;
 import ow.server.ai.ShipSpawner;
-import ow.server.arch.RTree;
+import ow.server.arch.Task;
+import ow.server.arch.qtree.QuadTree;
+import ow.server.arch.qtree.Query;
 import ow.server.sync.GameSync;
+
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.Uninterruptibles;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.getFirst;
@@ -34,13 +36,19 @@ public class World {
   private static final Logger logger = Logger.getLogger(World.class);
 
   private final OWServer server;
+
   private Map<Integer, Ship> ships = Maps.newConcurrentMap();
+  private QuadTree<Ship> shipTree;
+
   private List<Shot> shots = Lists.newCopyOnWriteArrayList();
   private List<AI> ais = Lists.newCopyOnWriteArrayList();
-  private final RTree<Planet> planets;
+  private Map<Integer, ShipAI> shipAIs = Maps.newConcurrentMap();
+  private final QuadTree<Planet> planets;
 
   private final Planet startingPlanet;
   private final GameSync sync;
+
+  private Task refreshTreeTask = Task.every(1, TimeUnit.SECONDS);
 
   public World(OWServer server) {
     this.server = server;
@@ -48,32 +56,15 @@ public class World {
 
     this.planets = new GraphGenerator().generatePlanets();
     startingPlanet = getFirst(planets, null);
+    
+    this.shipTree = new QuadTree<>(planets.getBounds());
 
-    Ship starterStation = add(new Ship(Faction.EXPLORERS, ShipType.STATION, startingPlanet.x + 300, startingPlanet.y + 200));
+    Ship starterStation = addShip(new Ship(Faction.EXPLORERS, ShipType.STATION, startingPlanet.x + 300, startingPlanet.y + 200));
     addAI(new ShipSpawner(this, starterStation, ShipType.MINI, 20, .5));
 
     new WorldGenerator(this).generate();
 
     Executors.newSingleThreadExecutor().execute(updater);
-  }
-
-  public Collection<Ship> getNearbyShips(Entity e, int radius) {
-    checkNotNull(e);
-
-    Multimap<Double, Ship> m = TreeMultimap.create();
-
-    radius = radius * radius;
-    for (Ship ship : ships.values()) {
-      if (e == ship) {
-        continue;
-      }
-      double d = e.distSquared(ship);
-      if (d <= radius) {
-        m.put(d, ship);
-      }
-    }
-
-    return m.values();
   }
 
   public void fire(Ship shooter) {
@@ -104,11 +95,24 @@ public class World {
 
     tickProjectiles(millis);
 
+    if (refreshTreeTask.isReady()) {
+      refreshTree();
+    }
+
     for (AI brain : ais) {
       if (brain.tick(millis)) {
         ais.remove(brain);
       }
     }
+  }
+
+  private void refreshTree() {
+    Stopwatch watch = Stopwatch.createStarted();
+    shipTree = new QuadTree<>(shipTree.getBounds());
+    for (Ship ship : ships.values()) {
+      shipTree.add(ship, ship.x, ship.y);
+    }
+    System.out.println("Refreshed Quadtree (" + ships.size() + " ships)" + " (" + watch + ")");
   }
 
   private void tickProjectiles(double millis) {
@@ -170,12 +174,10 @@ public class World {
 
   private Ship getIntersection(double x1, double y1, double x2, double y2, Faction shooterFaction) {
     Line line = new Line((float) x1, (float) y1, (float) x2, (float) y2);
-    for (Ship ship : ships.values()) {
+    List<Ship> nearby = shipTree.select(Query.start(x1, y1).radius(100).end());
+    for (Ship ship : nearby) {
       if (ship.faction == shooterFaction) {
         // no friendly fire
-        continue;
-      }
-      if (ship.distSquared(x2, y2) > 1000 * 1000) {
         continue;
       }
       Shape collisionArea = ship.getCollisionArea();
@@ -186,39 +188,49 @@ public class World {
     return null;
   }
 
-  public Ship add(Ship ship) {
+  public Ship addShip(Ship ship) {
     checkNotNull(ship);
 
     this.ships.put(ship.id, ship);
+    this.shipTree.add(ship, ship.x, ship.y);
 
     return ship;
   }
 
-  public void addAI(AI ai) {
+  public void removeShip(Ship ship) {
+    checkNotNull(ship);
+
+    this.ships.remove(ship.id);
+    this.shipTree.remove(ship);
+  }
+
+  public AI addAI(AI ai) {
     this.ais.add(ai);
+    if (ai instanceof ShipAI) {
+      Ship ship = ((ShipAI) ai).getShip();
+      this.shipAIs.put(ship.id, (ShipAI) ai);
+    }
+    return ai;
+  }
+
+  public ShipAI getAI(Ship ship) {
+    return this.shipAIs.get(ship.id);
   }
 
   public Ship getShip(int id) {
     return ships.get(id);
   }
 
-  public void remove(Ship ship) {
-    checkNotNull(ship);
-
-    this.ships.remove(ship.id);
-    sync.remove(ship);
-  }
-
-  public Collection<Ship> getShips() {
-    return ImmutableList.copyOf(ships.values());
-  }
-
   public Point getPlayerSpawnLocation() {
     return new Point((int) startingPlanet.x + 300, (int) startingPlanet.y + 100);
   }
 
-  public Iterable<Planet> getPlanets() {
+  public QuadTree<Planet> getPlanets() {
     return planets;
+  }
+
+  public QuadTree<Ship> getShips() {
+    return shipTree;
   }
 
   public Planet getStartingPlanet() {

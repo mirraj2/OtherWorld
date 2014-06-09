@@ -41,8 +41,15 @@ public class SGraphics {
   }
 
   public SGraphics fillCircle(double x, double y, double radius) {
-    g.fillOval((float) (x - radius), (float) (y - radius), (float) (radius * 2),
+    return fillOval((float) (x - radius), (float) (y - radius), (float) (radius * 2),
         (float) (radius * 2));
+  }
+
+  private SGraphics fillOval(double x, double y, double w, double h) {
+    if (clipMiss(x, y, w, h)) {
+      return this;
+    }
+    g.fillOval((float) x, (float) y, (float) w, (float) h);
     return this;
   }
 

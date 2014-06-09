@@ -1,5 +1,10 @@
 package ow.common;
 
+import static com.google.common.collect.Iterables.get;
+import static com.google.common.collect.Iterables.isEmpty;
+import static com.google.common.collect.Iterables.size;
+
+
 public class OMath {
 
   public static final double TWO_PI = Math.PI * 2;
@@ -20,6 +25,17 @@ public class OMath {
 
   public static boolean equals(double a, double b) {
     return Math.abs(a - b) < .0000001;
+  }
+
+  public static <T> T random(Iterable<T> items) {
+    if (isEmpty(items)) {
+      return null;
+    }
+    return get(items, (int) (Math.random() * size(items)));
+  }
+
+  public static boolean isZero(double d) {
+    return equals(d, 0);
   }
 
 }

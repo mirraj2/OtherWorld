@@ -2,9 +2,7 @@ package ow.server.model;
 
 import java.awt.Point;
 
-import ow.server.arch.RTree.Locatable;
-
-public class Entity implements Locatable {
+public class Entity {
 
   private static int ID_COUNTER = 0;
 
@@ -39,16 +37,6 @@ public class Entity implements Locatable {
   @Override
   public int hashCode() {
     return id;
-  }
-
-  @Override
-  public double getX() {
-    return x;
-  }
-
-  @Override
-  public double getY() {
-    return y;
   }
 
 }

@@ -1,7 +1,11 @@
 package ow.server.ai;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import ow.common.ShipType;
+import ow.server.arch.Task;
+import ow.server.model.Ship;
 import ow.server.model.World;
 
 /**
@@ -27,7 +31,7 @@ public class ExpandAI extends ShipAI {
       return true;
     }
 
-    if (spawner.isAtMaxCapacity()) {
+    if (spawner.getNumShipsSpawned() >= 10) {
       if (spawnColonyShip.isReady() && Math.random() < .1) {
         spawnColonyShip();
       }
@@ -37,13 +41,14 @@ public class ExpandAI extends ShipAI {
   }
 
   private void spawnColonyShip() {
-    // spawn the colony ship
-    // give it an AI which makes it search for an uninhabited planet
+    Ship colonyShip = world.addShip(new Ship(getShip().faction, ShipType.COLONY_SHIP, ship.x, ship.y));
+    world.addAI(new ColonizeAI(world, colonyShip));
 
-    // somehow get access to the protectAI of all the ships in this spawner
-    // and tell them to protect the colony ship we just spawned
-
-    // make sure the spawner's ship buffer is cleared so that it can keep spawning
+    List<Ship> protectors = spawner.emptySpawnList();
+    for (Ship ship : protectors) {
+      ProtectAI ai = (ProtectAI) world.getAI(ship);
+      ai.protect(colonyShip).patrolDistance(100);
+    }
   }
 
 }

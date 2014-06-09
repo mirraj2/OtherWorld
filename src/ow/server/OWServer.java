@@ -37,6 +37,7 @@ public class OWServer implements ConnectionListener {
 
   private static final Logger logger = Logger.getLogger(OWServer.class);
 
+  public static boolean FAST_SPAWN = false;
   private static final ShipType STARTING_SHIP = ShipType.CHEATSHIP;
   private static final int PORT = 19883;
   private static final JsonParser parser = new JsonParser();
@@ -121,7 +122,7 @@ public class OWServer implements ConnectionListener {
     logger.debug("Lost connection with: " + broken);
     Player player = connectionPlayers.remove(broken);
     if (player.getShip() != null) {
-      world.remove(player.getShip());
+      world.removeShip(player.getShip());
     }
   }
 
@@ -159,7 +160,7 @@ public class OWServer implements ConnectionListener {
   private void spawn(Player p) {
     Ship ship = new Ship(Faction.EXPLORERS, STARTING_SHIP, world.getPlayerSpawnLocation());
     p.setShip(ship);
-    world.add(ship);
+    world.addShip(ship);
 
     sync.sendShip(p);
 
