@@ -2,14 +2,13 @@ package ow.client.arch;
 
 import java.awt.Rectangle;
 
+import com.google.common.base.Throwables;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Font;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Shape;
-
-import com.google.common.base.Throwables;
 
 public class SGraphics {
 
@@ -29,6 +28,14 @@ public class SGraphics {
 
   public SGraphics fill(Shape shape) {
     g.fill(shape);
+    return this;
+  }
+
+  public SGraphics draw(double x, double y, double w, double h) {
+    if (clipMiss(x, y, w, h)) {
+      return this;
+    }
+    g.drawRect((float) x, (float) y, (float) w, (float) h);
     return this;
   }
 

@@ -1,6 +1,10 @@
 package ow.client;
 
+import java.awt.Rectangle;
+import java.util.List;
+
 import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -76,7 +80,9 @@ public class NetworkHandler implements ConnectionListener {
       }
       ship.x = o.get("x").getAsDouble();
       ship.y = o.get("y").getAsDouble();
-      ship.hp = o.get("hp").getAsDouble();
+      if (o.has("hp")) {
+        ship.hp = o.get("hp").getAsDouble();
+      }
       ship.rotation = o.get("rotation").getAsDouble();
       ship.moving = o.get("moving").getAsBoolean();
       ship.active = true;
@@ -118,6 +124,10 @@ public class NetworkHandler implements ConnectionListener {
 
       client.setMyShip(ship);
       model.focus(ship);
+    } else if (command.equals("quadtree")) {
+      List<Rectangle> rects = Lists.newArrayList();
+      parseQuadTree(o.getAsJsonObject("root"), rects);
+      model.setDebugRects(rects);
     }
     else {
       logger.warn("unknown message: " + o);
@@ -130,6 +140,20 @@ public class NetworkHandler implements ConnectionListener {
   @Override
   public void connectionBroken(Connection broken, boolean forced) {
     logger.info("Lost connection to the server.");
+  }
+
+  private void parseQuadTree(JsonObject node, List<Rectangle> rects) {
+    Rectangle r = new Rectangle(get(node, "x"), get(node, "y"), get(node, "w"), get(node, "h"));
+    rects.add(r);
+    if (node.has("children")) {
+      for (JsonElement e : node.getAsJsonArray("children")) {
+        parseQuadTree(e.getAsJsonObject(), rects);
+      }
+    }
+  }
+
+  private int get(JsonObject node, String key) {
+    return node.get(key).getAsInt();
   }
 
 }

@@ -17,14 +17,13 @@ import org.apache.log4j.Logger;
 import org.newdawn.slick.geom.Line;
 import org.newdawn.slick.geom.Shape;
 import ow.common.Faction;
-import ow.common.ShipType;
 import ow.server.OWServer;
 import ow.server.ai.AI;
 import ow.server.ai.ShipAI;
-import ow.server.ai.ShipSpawner;
 import ow.server.arch.Task;
 import ow.server.arch.qtree.QuadTree;
 import ow.server.arch.qtree.Query;
+import ow.server.gen.AdventureModeGenerator;
 import ow.server.sync.GameSync;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -59,10 +58,8 @@ public class World {
     
     this.shipTree = new QuadTree<>(planets.getBounds());
 
-    Ship starterStation = addShip(new Ship(Faction.EXPLORERS, ShipType.STATION, startingPlanet.x + 300, startingPlanet.y + 200));
-    addAI(new ShipSpawner(this, starterStation, ShipType.MINI, 20, .5));
-
-    new WorldGenerator(this).generate();
+    new AdventureModeGenerator(this).generate();
+    // new TwoFactionScenario(this).generate();
 
     Executors.newSingleThreadExecutor().execute(updater);
   }
@@ -111,6 +108,9 @@ public class World {
     shipTree = new QuadTree<>(shipTree.getBounds());
     for (Ship ship : ships.values()) {
       shipTree.add(ship, ship.x, ship.y);
+    }
+    if (OWServer.ENABLE_QUADTREE_DEBUG) {
+      server.sendToAll(shipTree.toJson());
     }
     System.out.println("Refreshed Quadtree (" + ships.size() + " ships)" + " (" + watch + ")");
   }

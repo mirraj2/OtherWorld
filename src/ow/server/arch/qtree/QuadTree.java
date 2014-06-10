@@ -3,9 +3,10 @@ package ow.server.arch.qtree;
 import java.util.Iterator;
 import java.util.List;
 
-import ow.server.arch.qtree.QuadNode.QEntry;
-
 import com.google.common.collect.Lists;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import ow.server.arch.qtree.QuadNode.QEntry;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Iterables.getOnlyElement;
@@ -66,36 +67,34 @@ public class QuadTree<T> implements Iterable<T> {
     return root.r;
   }
 
-  // public T getClosest(double x, double y) {
-  // return getClosest(x, y, Integer.MAX_VALUE);
-  // }
-  //
-  // public T getClosest(double x, double y, double radius) {
-  // List<T> nearby = getNearby(x, y, radius, 1);
-  // return nearby.isEmpty() ? null : nearby.get(0);
-  // }
-  //
-  // public List<T> getNearby(double x, double y, double radius) {
-  // return getNearby(x, y, radius, Integer.MAX_VALUE);
-  // }
-  //
-  // @SuppressWarnings("unchecked")
-  // public List<T> getNearby(double x, double y, double radius, int limit) {
-  // List<Object> ret = Lists.newArrayList();
-  //
-  // Rect r = new Rect(x - radius, y - radius, radius * 2, radius * 2);
-  // double rSquared = radius * radius;
-  //
-  // checkState(!Double.isInfinite(rSquared));
-  //
-  // root.getNearby(x, y, rSquared, r, ret, limit);
-  //
-  // return (List<T>) ret;
-  // }
-
   @Override
   public Iterator<T> iterator() {
     return items.iterator();
+  }
+
+  public JsonObject toJson() {
+    JsonObject o = new JsonObject();
+    o.addProperty("command", "quadtree");
+    o.add("root", toJson(root));
+    return o;
+  }
+
+  private JsonObject toJson(QuadNode node) {
+    JsonObject ret = new JsonObject();
+    ret.addProperty("x", node.r.x);
+    ret.addProperty("y", node.r.y);
+    ret.addProperty("w", node.r.w);
+    ret.addProperty("h", node.r.h);
+
+    if (!node.isLeaf()) {
+      JsonArray a = new JsonArray();
+      for (QuadNode child : node.getChildren()) {
+        a.add(toJson(child));
+      }
+      ret.add("children", a);
+    }
+
+    return ret;
   }
 
 }

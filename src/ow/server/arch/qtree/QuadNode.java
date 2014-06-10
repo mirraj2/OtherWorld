@@ -9,7 +9,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 class QuadNode {
-  private static final int NODE_CAPACITY = 8;
+  private static final int NODE_CAPACITY = 4;
 
   public final Rect r;
 
@@ -162,11 +162,12 @@ class QuadNode {
 
     double mx = r.w / 2;
     double my = r.h / 2;
-    children = new QuadNode[4];
+    QuadNode[] children = new QuadNode[4];
     children[0] = new QuadNode(r.x, r.y, mx, my);
     children[1] = new QuadNode(r.x + mx, r.y, mx, my);
     children[2] = new QuadNode(r.x, r.y + my, mx, my);
     children[3] = new QuadNode(r.x + mx, r.y + my, mx, my);
+    this.children = children;
 
     for (QEntry item : items) {
       addToChildren(item);
@@ -182,8 +183,12 @@ class QuadNode {
     }
   }
 
-  private boolean isLeaf() {
+  public boolean isLeaf() {
     return children == null;
+  }
+
+  public QuadNode[] getChildren() {
+    return children;
   }
 
   static final class QEntry {

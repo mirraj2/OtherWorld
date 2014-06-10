@@ -4,13 +4,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import ow.server.gen.TwoFactionScenario;
+
+
 import ow.common.OMath;
 import ow.common.ShipType;
 import ow.server.arch.qtree.Query;
 import ow.server.model.Planet;
 import ow.server.model.Ship;
 import ow.server.model.World;
-import ow.server.model.WorldGenerator;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -46,7 +48,7 @@ public class ColonizeAI extends ShipAI {
         // transform into a station
         world.removeShip(ship);
         Ship station = world.addShip(new Ship(ship.faction, ShipType.STATION, ship.x, ship.y));
-        ShipSpawner spawner = WorldGenerator.getStationSpawner(world, station);
+        ShipSpawner spawner = TwoFactionScenario.getStationSpawner(world, station);
         world.addAI(spawner);
         world.addAI(new ExpandAI(world, spawner));
         return true;

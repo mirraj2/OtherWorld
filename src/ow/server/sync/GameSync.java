@@ -119,7 +119,7 @@ public class GameSync {
   private final Runnable updater = new Runnable() {
     @Override
     public void run() {
-      if (dirty.isEmpty()) {
+      if (dirty.isEmpty() && shots.isEmpty() && shotsHit.isEmpty()) {
         return;
       }
 

@@ -1,25 +1,31 @@
-package ow.server.model;
-
-import java.util.Random;
+package ow.server.gen;
 
 import ow.common.Faction;
 import ow.common.ShipType;
 import ow.server.ai.ExpandAI;
 import ow.server.ai.ProtectAI;
 import ow.server.ai.ShipSpawner;
+import ow.server.model.Planet;
+import ow.server.model.Ship;
+import ow.server.model.World;
 
-public class WorldGenerator {
+/**
+ * A scenario where to factions are battling to take control of the universe.
+ */
+public class TwoFactionScenario extends Generator {
 
-  private static final Random rand = new Random();
-
-  private final World world;
-
-  public WorldGenerator(World world) {
-    this.world = world;
+  public TwoFactionScenario(World world) {
+    super(world);
   }
 
+  @Override
   public void generate() {
     Planet startingPlanet = world.getStartingPlanet();
+
+    Ship starterStation = world.addShip(new Ship(Faction.EXPLORERS, ShipType.STATION, startingPlanet.x + 300,
+        startingPlanet.y + 200));
+    world.addAI(new ShipSpawner(world, starterStation, ShipType.MINI, 20, .5));
+
     for (Planet planet : world.getPlanets()) {
       if (planet == startingPlanet) {
         continue;
@@ -48,8 +54,6 @@ public class WorldGenerator {
       } else {
         generateUnits(planet, faction);
       }
-    } else {
-      // neutral planet
     }
   }
 

@@ -6,18 +6,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
-import org.apache.log4j.Logger;
-import org.newdawn.slick.Color;
-import org.newdawn.slick.Image;
-
-import ow.client.arch.SGraphics;
-import ow.client.model.effect.Effect;
-import ow.client.model.effect.ShipExplosion;
-
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import org.apache.log4j.Logger;
+import org.newdawn.slick.Color;
+import org.newdawn.slick.Image;
+import ow.client.arch.SGraphics;
+import ow.client.model.effect.Effect;
+import ow.client.model.effect.ShipExplosion;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -35,10 +33,12 @@ public class ClientModel {
   private final List<Runnable> tasksToRun = Lists.newCopyOnWriteArrayList();
 
   private List<Integer> expiredShots = Lists.newArrayList();
+  private List<Rectangle> debugRects = Lists.newArrayList();
 
   private double zoom = 1;
 
   private Ship focus = null;
+  private boolean showDebugRects = false;
 
   public void addShip(Ship ship) {
     if (ships.containsKey(ship.id)) {
@@ -150,6 +150,13 @@ public class ClientModel {
     for (Shot shot : shots.values()) {
       g.setColor(Color.orange).fillCircle(shot.x, shot.y, 2);
     }
+
+    if (showDebugRects) {
+      g.setColor(Color.orange);
+      for (Rectangle r : debugRects) {
+        g.draw(r.x, r.y, r.width, r.height);
+      }
+    }
   }
 
   private void drawConnections(SGraphics g) {
@@ -217,13 +224,21 @@ public class ClientModel {
   }
 
   public void zoomOut() {
-    zoom /= 1.1;
+    zoom /= 1.3;
     // zoom /= 2;
   }
 
   public void zoomIn() {
-    zoom *= 1.1;
+    zoom *= 1.3;
     // zoom *= 2;
+  }
+
+  public void setDebugRects(List<Rectangle> debugRects) {
+    this.debugRects = debugRects;
+  }
+
+  public void toggleDebugRects() {
+    this.showDebugRects = !showDebugRects;
   }
 
 }

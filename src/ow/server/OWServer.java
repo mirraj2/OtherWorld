@@ -27,14 +27,14 @@ import ow.server.model.World;
 import ow.server.sync.GameSync;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 
 public class OWServer implements ConnectionListener {
 
   private static final Logger logger = Logger.getLogger(OWServer.class);
 
-  public static boolean FAST_SPAWN = true;
-  private static final ShipType STARTING_SHIP = ShipType.CHEATSHIP;
+  public static boolean ENABLE_QUADTREE_DEBUG = false;
+  public static boolean FAST_SPAWN = false;
+  private static final ShipType STARTING_SHIP = ShipType.MINI;
   private static final int PORT = 19883;
   private static final JsonParser parser = new JsonParser();
 
@@ -108,26 +108,25 @@ public class OWServer implements ConnectionListener {
     Player player = connectionPlayers.get(from);
     Ship ship = player.getShip();
 
-    if (command.equals("update")) {
-      checkArgument(Objects.equal(ship.id, o.get("id").getAsInt()),
-          "Cannot update a ship that is not your own! " + ship.id + " vs " + o.get("id"));
+    if (ship != null) {
+      if (command.equals("update")) {
+        checkArgument(Objects.equal(ship.id, o.get("id").getAsInt()), "Cannot update a ship that is not your own! "
+            + ship.id + " vs " + o.get("id"));
 
-      ship.x = o.get("x").getAsDouble();
-      ship.y = o.get("y").getAsDouble();
-      ship.moving = o.get("moving").getAsBoolean();
-      ship.rotation = o.get("rotation").getAsDouble();
-      ship.movementDirection = o.get("direction").getAsDouble();
+        ship.x = o.get("x").getAsDouble();
+        ship.y = o.get("y").getAsDouble();
+        ship.moving = o.get("moving").getAsBoolean();
+        ship.rotation = o.get("rotation").getAsDouble();
+        ship.movementDirection = o.get("direction").getAsDouble();
 
-      sendToAllBut(o, from);
-    } else if (command.equals("shoot")) {
-      world.fire(ship);
-    } else if (command.equals("respawn")) {
-      checkState(ship == null, "Cannot respawn when you already have a ship!");
-      
-      spawn(player);
-    }
-    else {
-      logger.debug("Unknown message: " + o);
+        sendToAllBut(o, from);
+      } else if (command.equals("shoot")) {
+        world.fire(ship);
+      }
+    } else {
+      if (command.equals("respawn")) {
+        spawn(player);
+      }
     }
   }
 
