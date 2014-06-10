@@ -2,15 +2,14 @@ package ow.server.arch.qtree;
 
 import java.util.List;
 
-import ow.common.OMath;
-
 import com.google.common.collect.Lists;
+import ow.common.OMath;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 class QuadNode {
-  private static final int NODE_CAPACITY = 4;
+  private static final int NODE_CAPACITY = 8;
 
   public final Rect r;
 
@@ -40,7 +39,8 @@ class QuadNode {
     }
 
     if (items == null) {
-      items = Lists.newArrayListWithCapacity(NODE_CAPACITY + 1);
+      items = Lists.newCopyOnWriteArrayList();
+      // items = Lists.newArrayListWithCapacity(NODE_CAPACITY + 1);
     }
     items.add(entry);
     if (items.size() > NODE_CAPACITY) {
@@ -77,7 +77,7 @@ class QuadNode {
 
     while (true) {
       getNearby(query.x, query.y, Double.MAX_VALUE, searchRegion, results, Integer.MAX_VALUE);
-      
+
       if (!results.isEmpty()) {
         trimClosest(results, query);
         return;
@@ -162,7 +162,7 @@ class QuadNode {
 
     double mx = r.w / 2;
     double my = r.h / 2;
-    children = new QuadNode[NODE_CAPACITY];
+    children = new QuadNode[4];
     children[0] = new QuadNode(r.x, r.y, mx, my);
     children[1] = new QuadNode(r.x + mx, r.y, mx, my);
     children[2] = new QuadNode(r.x, r.y + my, mx, my);

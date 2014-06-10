@@ -16,7 +16,7 @@ public class OMath {
   }
 
   public static double getTargetRotation(double x, double y, double targetX, double targetY) {
-    double ret = Math.atan2(targetX - x, targetY - y) - Math.PI / 2;
+    double ret = FastMath.atan2((float) (targetX - x), (float) (targetY - y)) - Math.PI / 2;
     if (ret < 0) {
       ret += Math.PI * 2;
     }

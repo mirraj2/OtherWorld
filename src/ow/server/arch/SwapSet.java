@@ -1,5 +1,6 @@
 package ow.server.arch;
 
+import java.util.Collection;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -25,6 +26,10 @@ public class SwapSet<T> {
 
   public void add(T item) {
     current.add(item);
+  }
+
+  public void addAll(Collection<T> items) {
+    current.addAll(items);
   }
 
   public static <T> SwapSet<T> create() {

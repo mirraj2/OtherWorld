@@ -3,14 +3,13 @@ package ow.server.ai;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import ow.common.ShipType;
 import ow.server.OWServer;
 import ow.server.arch.Task;
 import ow.server.model.Ship;
 import ow.server.model.World;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -18,7 +17,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ShipSpawner extends ShipAI {
 
   private final List<Ship> shipsSpawned = Lists.newArrayList();
-  private final Task spawnTask = Task.every(1000, TimeUnit.MILLISECONDS);
+  private final Task spawnTask = Task.every(OWServer.FAST_SPAWN ? 100 : 1000, TimeUnit.MILLISECONDS);
   private final ShipType spawnType;
   private final int maxShips;
   private final double spawnChance;

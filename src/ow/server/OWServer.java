@@ -1,25 +1,6 @@
 package ow.server;
 
-import java.util.Collection;
 import java.util.Map;
-
-import jexxus.common.Connection;
-import jexxus.common.ConnectionListener;
-import jexxus.common.Delivery;
-import jexxus.server.Server;
-import jexxus.server.ServerConnection;
-
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
-
-import ow.common.Faction;
-import ow.common.ShipType;
-import ow.server.model.Planet;
-import ow.server.model.Player;
-import ow.server.model.Ship;
-import ow.server.model.Shot;
-import ow.server.model.World;
-import ow.server.sync.GameSync;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
@@ -29,6 +10,21 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import jexxus.common.Connection;
+import jexxus.common.ConnectionListener;
+import jexxus.common.Delivery;
+import jexxus.server.Server;
+import jexxus.server.ServerConnection;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
+import ow.common.Faction;
+import ow.common.ShipType;
+import ow.server.model.Planet;
+import ow.server.model.Player;
+import ow.server.model.Ship;
+import ow.server.model.Shot;
+import ow.server.model.World;
+import ow.server.sync.GameSync;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -37,7 +33,7 @@ public class OWServer implements ConnectionListener {
 
   private static final Logger logger = Logger.getLogger(OWServer.class);
 
-  public static boolean FAST_SPAWN = false;
+  public static boolean FAST_SPAWN = true;
   private static final ShipType STARTING_SHIP = ShipType.CHEATSHIP;
   private static final int PORT = 19883;
   private static final JsonParser parser = new JsonParser();
@@ -62,10 +58,6 @@ public class OWServer implements ConnectionListener {
     }
 
     sync.onHit(shot, ship, damage);
-  }
-
-  public void onShotsFired(Collection<Shot> shots) {
-    sendToAll(createShotsObject(shots));
   }
 
   private void sendToAllBut(JsonElement o, Connection sender) {
@@ -96,24 +88,6 @@ public class OWServer implements ConnectionListener {
     }
     o.add("connections", connections);
 
-    return o;
-  }
-
-  private JsonObject createShotsObject(Collection<Shot> shots) {
-    JsonObject o = new JsonObject();
-    o.addProperty("command", "shots");
-    JsonArray shotsArray = new JsonArray();
-    for (Shot shot : shots) {
-      JsonObject s = new JsonObject();
-      s.addProperty("id", shot.id);
-      s.addProperty("x", shot.x);
-      s.addProperty("y", shot.y);
-      s.addProperty("rotation", shot.rotation);
-      s.addProperty("velocity", shot.velocity);
-      s.addProperty("max_distance", shot.maxDistance);
-      shotsArray.add(s);
-    }
-    o.add("shots", shotsArray);
     return o;
   }
 

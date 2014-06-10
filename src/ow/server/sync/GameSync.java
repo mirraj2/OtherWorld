@@ -1,19 +1,20 @@
 package ow.server.sync;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.collect.Sets;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import ow.server.OWServer;
 import ow.server.arch.SwapSet;
 import ow.server.arch.qtree.Query;
 import ow.server.model.Player;
 import ow.server.model.Ship;
 import ow.server.model.Shot;
-
-import com.google.common.collect.Sets;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 
 /**
  * In charge of telling players when relevant entities have updated.
@@ -25,6 +26,7 @@ public class GameSync {
   private final OWServer server;
 
   private SwapSet<Ship> dirty = SwapSet.create();
+  private SwapSet<Shot> shots = SwapSet.create();
   private SwapSet<ShotHit> shotsHit = SwapSet.create();
 
   public GameSync(OWServer server) {
@@ -42,17 +44,21 @@ public class GameSync {
     shotsHit.add(new ShotHit(shot, ship, damage));
   }
 
-  private void sendUpdates(Set<Ship> updated, Set<ShotHit> shotsHit) {
+  public void onShotsFired(List<Shot> shots) {
+    this.shots.addAll(shots);
+  }
+
+  private void sendUpdates(Set<Ship> updated, Set<Shot> shots, Set<ShotHit> shotsHit) {
     for (Player player : server.getPlayers()) {
       try {
-        sendUpdates(updated, player, shotsHit);
+        sendUpdates(updated, player, shots, shotsHit);
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
   }
 
-  private void sendUpdates(Set<Ship> updated, Player player, Set<ShotHit> shotsHit) {
+  private void sendUpdates(Set<Ship> updated, Player player, Set<Shot> shots, Set<ShotHit> shotsHit) {
     SyncInfo info = player.getSyncInfo();
 
     Ship playersShip = player.getShip();
@@ -75,6 +81,9 @@ public class GameSync {
     int numNew = 0, numOut = 0, numUpdate = 0, numShots = 0;
     
     JsonArray a = new JsonArray();
+    // todo only send the shots that are near this player
+    a.add(createShotsObject(shots));
+
     // todo only send the shots that are near this player
     for (ShotHit shotHit : shotsHit) {
       a.add(createShotHitObject(shotHit));
@@ -114,7 +123,7 @@ public class GameSync {
         return;
       }
 
-      sendUpdates(dirty.get(), shotsHit.get());
+      sendUpdates(dirty.get(), shots.get(), shotsHit.get());
     }
   };
 
@@ -160,6 +169,24 @@ public class GameSync {
     JsonObject o = new JsonObject();
     o.addProperty("command", "offscreen");
     o.addProperty("id", ship.id);
+    return o;
+  }
+
+  private JsonObject createShotsObject(Collection<Shot> shots) {
+    JsonObject o = new JsonObject();
+    o.addProperty("command", "shots");
+    JsonArray shotsArray = new JsonArray();
+    for (Shot shot : shots) {
+      JsonObject s = new JsonObject();
+      s.addProperty("id", shot.id);
+      s.addProperty("x", shot.x);
+      s.addProperty("y", shot.y);
+      s.addProperty("rotation", shot.rotation);
+      s.addProperty("velocity", shot.velocity);
+      s.addProperty("max_distance", shot.maxDistance);
+      shotsArray.add(s);
+    }
+    o.add("shots", shotsArray);
     return o;
   }
 

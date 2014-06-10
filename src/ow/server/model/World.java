@@ -4,13 +4,18 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.log4j.Logger;
 import org.newdawn.slick.geom.Line;
 import org.newdawn.slick.geom.Shape;
-
 import ow.common.Faction;
 import ow.common.ShipType;
 import ow.server.OWServer;
@@ -21,11 +26,6 @@ import ow.server.arch.Task;
 import ow.server.arch.qtree.QuadTree;
 import ow.server.arch.qtree.Query;
 import ow.server.sync.GameSync;
-
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.Uninterruptibles;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.getFirst;
@@ -78,7 +78,7 @@ public class World {
 
     shots.addAll(ret);
 
-    server.onShotsFired(ret);
+    sync.onShotsFired(ret);
   }
 
   /**
@@ -116,7 +116,7 @@ public class World {
   }
 
   private void tickProjectiles(double millis) {
-    List<Shot> expiredShots = Lists.newArrayList();
+    Set<Shot> expiredShots = Sets.newHashSet();
     for (Shot shot : shots) {
       double x1 = shot.x, y1 = shot.y;
       shot.tick(millis);
@@ -251,7 +251,7 @@ public class World {
         double millis = (now - lastTime) / 1000000.0;
 
         try {
-          if (millis >= 10) {
+          if (millis > 10) {
             System.out.println("tick: " + millis);
           }
           tick(millis);
@@ -260,7 +260,9 @@ public class World {
         }
 
         lastTime = now;
-        Uninterruptibles.sleepUninterruptibly(1, TimeUnit.MILLISECONDS);
+        if (millis < 2) {
+          Uninterruptibles.sleepUninterruptibly(1, TimeUnit.MILLISECONDS);
+        }
       }
     }
   };
