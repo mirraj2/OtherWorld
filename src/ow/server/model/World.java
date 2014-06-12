@@ -23,7 +23,7 @@ import ow.server.ai.ShipAI;
 import ow.server.arch.Task;
 import ow.server.arch.qtree.QuadTree;
 import ow.server.arch.qtree.Query;
-import ow.server.gen.AdventureModeGenerator;
+import ow.server.gen.TwoFactionScenario;
 import ow.server.sync.GameSync;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -58,8 +58,8 @@ public class World {
     
     this.shipTree = new QuadTree<>(planets.getBounds());
 
-    new AdventureModeGenerator(this).generate();
-    // new TwoFactionScenario(this).generate();
+    // new AdventureModeGenerator(this).generate();
+    new TwoFactionScenario(this).generate();
 
     Executors.newSingleThreadExecutor().execute(updater);
   }

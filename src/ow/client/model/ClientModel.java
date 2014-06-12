@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
+import org.jason.SGraphics;
+
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -13,7 +15,6 @@ import com.google.common.collect.Sets;
 import org.apache.log4j.Logger;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Image;
-import ow.client.arch.SGraphics;
 import ow.client.model.effect.Effect;
 import ow.client.model.effect.ShipExplosion;
 

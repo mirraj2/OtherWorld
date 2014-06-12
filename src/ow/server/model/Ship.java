@@ -4,10 +4,11 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 
+import org.jason.ImageLoader;
+
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.Shape;
 
-import ow.client.ImageLoader;
 import ow.common.Faction;
 import ow.common.OMath;
 import ow.common.ShipType;

@@ -1,8 +1,9 @@
 package ow.client.model;
 
+import org.jason.ImageLoader;
+
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Image;
-import ow.client.ImageLoader;
 import ow.common.Faction;
 import ow.common.OMath;
 import ow.common.ShipType;

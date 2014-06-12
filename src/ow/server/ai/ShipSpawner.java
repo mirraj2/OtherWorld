@@ -17,7 +17,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ShipSpawner extends ShipAI {
 
   private final List<Ship> shipsSpawned = Lists.newArrayList();
-  private final Task spawnTask = Task.every(OWServer.FAST_SPAWN ? 100 : 1000, TimeUnit.MILLISECONDS);
+  private final Task spawnTask = Task.every(OWServer.FAST_SPAWN ? 10 : 1000, TimeUnit.MILLISECONDS);
   private final ShipType spawnType;
   private final int maxShips;
   private final double spawnChance;
@@ -66,7 +66,7 @@ public class ShipSpawner extends ShipAI {
 
   public List<Ship> emptySpawnList() {
     List<Ship> ret = ImmutableList.copyOf(shipsSpawned);
-    shipsSpawned.clear();
+    // shipsSpawned.clear();
     return ret;
   }
 

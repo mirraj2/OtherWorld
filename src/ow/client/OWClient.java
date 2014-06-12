@@ -14,6 +14,8 @@ import jexxus.client.ClientConnection;
 import jexxus.common.Delivery;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.jason.ImageLoader;
+import org.jason.SGraphics;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
@@ -25,7 +27,6 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.TrueTypeFont;
-import ow.client.arch.SGraphics;
 import ow.client.model.ClientModel;
 import ow.client.model.Ship;
 
@@ -239,6 +240,7 @@ public class OWClient extends BasicGame {
   public static void main(String[] args) throws Exception {
     BasicConfigurator.configure();
 
+    ImageLoader.setLoader(OWClient.class);
     AppGameContainer container = new AppGameContainer(new OWClient());
 
     DisplayMode mode = Display.getDesktopDisplayMode();

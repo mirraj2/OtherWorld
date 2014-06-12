@@ -1,6 +1,6 @@
 package ow.client.model.effect;
 
-import ow.client.arch.SGraphics;
+import org.jason.SGraphics;
 
 public abstract class Effect {
 

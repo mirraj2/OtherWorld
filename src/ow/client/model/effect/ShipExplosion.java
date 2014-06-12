@@ -2,9 +2,10 @@ package ow.client.model.effect;
 
 import java.util.List;
 
+import org.jason.SGraphics;
+
 import org.newdawn.slick.Image;
 
-import ow.client.arch.SGraphics;
 import ow.client.arch.SlickUtils;
 import ow.client.model.Ship;
 

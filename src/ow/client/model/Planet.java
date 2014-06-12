@@ -3,11 +3,12 @@ package ow.client.model;
 import java.awt.Color;
 import java.util.List;
 
+import org.jason.ImageLoader;
+
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import org.newdawn.slick.Image;
-import ow.client.ImageLoader;
 
 public class Planet {
 

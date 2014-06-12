@@ -33,8 +33,8 @@ public class OWServer implements ConnectionListener {
   private static final Logger logger = Logger.getLogger(OWServer.class);
 
   public static boolean ENABLE_QUADTREE_DEBUG = false;
-  public static boolean FAST_SPAWN = false;
-  private static final ShipType STARTING_SHIP = ShipType.MINI;
+  public static boolean FAST_SPAWN = true;
+  private static final ShipType STARTING_SHIP = ShipType.CHEATSHIP;
   private static final int PORT = 19883;
   private static final JsonParser parser = new JsonParser();
 

@@ -12,8 +12,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.jason.ImageLoader;
+
 import net.miginfocom.swing.MigLayout;
-import ow.client.ImageLoader;
 import swinglib.GFrame;
 
 public class HitBoxTest extends JPanel {

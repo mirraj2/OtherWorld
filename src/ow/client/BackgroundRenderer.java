@@ -3,11 +3,12 @@ package ow.client;
 import java.awt.Rectangle;
 import java.util.Random;
 
+import org.jason.SGraphics;
+
 import com.google.common.base.Throwables;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
-import ow.client.arch.SGraphics;
 
 public class BackgroundRenderer {
 

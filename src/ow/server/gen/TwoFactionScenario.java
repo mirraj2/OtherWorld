@@ -90,7 +90,9 @@ public class TwoFactionScenario extends Generator {
       spawnType = ShipType.MINI;
     }
 
-    return new ShipSpawner(world, station, spawnType, 10 + rand.nextInt(32), Math.random() * .5 + .01);
+    return new ShipSpawner(world, station, spawnType, 500, Math.random() * .5 + .01);
+    // return new ShipSpawner(world, station, spawnType, 10 + rand.nextInt(32),
+    // Math.random() * .5 + .01);
   }
 
 }
