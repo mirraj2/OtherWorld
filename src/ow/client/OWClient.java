@@ -71,7 +71,7 @@ public class OWClient extends BasicGame {
     int w = container.getWidth();
     int h = container.getHeight();
 
-    g.setColor(Color.black).fillRect(0, 0, w, h);
+    g.color(Color.black).fillRect(0, 0, w, h);
 
     Rectangle cameraLocation = model.getCameraBounds(w, h);
     backgroundRenderer.render(cameraLocation, g);
@@ -81,7 +81,7 @@ public class OWClient extends BasicGame {
     g.pop();
 
     if (canRespawn()) {
-      g.setColor(Color.white).font(font).textCentered("Click to respawn.", w, h);
+      g.color(Color.white).font(font).textCentered("Click to respawn.", w, h);
     }
   }
 

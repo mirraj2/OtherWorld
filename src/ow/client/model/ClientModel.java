@@ -6,13 +6,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
-import org.jason.SGraphics;
-
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.log4j.Logger;
+import org.jason.SGraphics;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Image;
 import ow.client.model.effect.Effect;
@@ -149,11 +148,11 @@ public class ClientModel {
     }
 
     for (Shot shot : shots.values()) {
-      g.setColor(Color.orange).fillCircle(shot.x, shot.y, 2);
+      g.color(Color.orange).fillCircle(shot.x, shot.y, 2);
     }
 
     if (showDebugRects) {
-      g.setColor(Color.orange);
+      g.color(Color.orange);
       for (Rectangle r : debugRects) {
         g.draw(r.x, r.y, r.width, r.height);
       }
@@ -161,7 +160,7 @@ public class ClientModel {
   }
 
   private void drawConnections(SGraphics g) {
-    g.setColor(connectionColor);
+    g.color(connectionColor);
     Set<Integer> seen = Sets.newHashSet();
     for (Planet planet : planets.values()) {
       for (int id : planet.connections) {
@@ -211,15 +210,15 @@ public class ClientModel {
     int barHeight = 4;
     double p = ship.hp / ship.maxHP;
 
-    g.setColor(Color.black);
+    g.color(Color.black);
     g.fillRect(x, y, image.getWidth(), barHeight);
 
     if (p < .2) {
-      g.setColor(Color.red);
+      g.color(Color.red);
     } else if (p < .5) {
-      g.setColor(Color.yellow);
+      g.color(Color.yellow);
     } else {
-      g.setColor(Color.green);
+      g.color(Color.green);
     }
     g.fillRect(x + 1, y + 1, p * image.getWidth() - 2, barHeight - 2);
   }
