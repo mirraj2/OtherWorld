@@ -1,5 +1,7 @@
 package ow.server;
 
+import jasonlib.swing.component.GFrame;
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -12,10 +14,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.jason.ImageLoader;
-
 import net.miginfocom.swing.MigLayout;
-import swinglib.GFrame;
 
 public class HitBoxTest extends JPanel {
 
@@ -81,14 +80,14 @@ public class HitBoxTest extends JPanel {
   }
 
   final MouseAdapter mouseListener = new MouseAdapter() {
+    @Override
     public void mouseMoved(MouseEvent e) {
       handle(e.getX(), e.getY());
     };
   };
 
   public static void main(String[] args) {
-    GFrame frame = new GFrame("Hit Box Test", new HitBoxTest());
-    frame.setSize(500, 300);
+    new GFrame("Hit Box Test").content(new HitBoxTest()).size(500, 300).start();
   }
 
 }

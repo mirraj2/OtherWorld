@@ -3,10 +3,11 @@ package ow.server.arch.qtree;
 import java.util.Iterator;
 import java.util.List;
 
+import ow.server.arch.qtree.QuadNode.QEntry;
+
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import ow.server.arch.qtree.QuadNode.QEntry;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Iterables.getOnlyElement;

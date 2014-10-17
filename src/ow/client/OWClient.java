@@ -2,19 +2,14 @@ package ow.client;
 
 import java.awt.Font;
 import java.awt.Rectangle;
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
-import com.google.gson.JsonObject;
 import jexxus.client.ClientConnection;
 import jexxus.common.Delivery;
+
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.jason.ImageLoader;
 import org.jason.SGraphics;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
@@ -27,8 +22,13 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.TrueTypeFont;
+
 import ow.client.model.ClientModel;
 import ow.client.model.Ship;
+
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonObject;
 
 public class OWClient extends BasicGame {
 
@@ -56,12 +56,8 @@ public class OWClient extends BasicGame {
 
     logger.info("Connecting to the server....");
     conn = new ClientConnection(networkHandler, SERVER_IP, PORT, false);
-    try {
-      conn.connect(1000);
-      logger.info("Connected!");
-    } catch (IOException e) {
-      throw Throwables.propagate(e);
-    }
+    conn.connect(1000);
+    logger.info("Connected!");
   }
 
   @Override
@@ -155,8 +151,7 @@ public class OWClient extends BasicGame {
   }
 
   @Override
-  public void mouseReleased(int button, int x, int y) {
-  }
+  public void mouseReleased(int button, int x, int y) {}
 
   private final Map<Integer, Double> movementDirections = ImmutableMap.of(Input.KEY_W, 0d,
       Input.KEY_S, Math.PI, Input.KEY_A, Math.PI / 2, Input.KEY_D, -Math.PI / 2);
@@ -224,7 +219,7 @@ public class OWClient extends BasicGame {
     conn.send(o.toString().getBytes(Charsets.UTF_8), Delivery.RELIABLE);
   }
 
-  public void setMyShip(Ship ship){
+  public void setMyShip(Ship ship) {
     this.myShip = ship;
   }
 

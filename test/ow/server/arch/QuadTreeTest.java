@@ -2,7 +2,6 @@ package ow.server.arch;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
 import ow.server.arch.qtree.QuadTree;
 import ow.server.arch.qtree.Query;
 
